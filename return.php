@@ -84,11 +84,12 @@ $products = $q->fetchAll();
         <div class="row">
             <?php
             foreach ($products as $key => $p) {
+                $imagePath = './asset/' . $p['Images'] . '.png';
             ?>
                 <div class="col-4 p-5">
                     <div class="px-3" style="background-color: #BABDE2; border: none">
                         <div class="d-flex justify-content-center" style="width: 100%;">
-                            <img src="./asset/Winton.webp" class="m-2" style="height: 250px" alt="">
+                            <img src="<?= $imagePath ?>" class="m-2" style="height: 250px" alt="">
                         </div>
                         <div style="font-size: 20px"><?= $p['Nama_Produk'] ?></div>
                         <div style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Harga_Jual'], 0, '.', ','); ?></div>

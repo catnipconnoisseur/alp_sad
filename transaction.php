@@ -97,6 +97,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         <div class="row">
             <?php
             foreach ($products as $key => $p) {
+                $imagePath = './asset/' . $p['Images'] . '.png';
                 $initialQuantity = 0;
                 foreach ($cart as $cartItem) {
                     if ($cartItem['ID_Produk'] == $p['ID_Produk']) {
@@ -108,7 +109,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                 <div class="col-6 p-5">
                     <div class="px-3" style="background-color: #BABDE2; border: none">
                         <div class="d-flex justify-content-center" style="width: 100%;">
-                            <img src="./asset/Winton.webp" class="m-2" style="height: 250px" alt="">
+                            <img src="<?= $imagePath ?>" class="m-2" style="height: 250px" alt="">
                         </div>
                         <div class="d-flex justify-content-between align-items-center" style="width: 100%;">
                             <div>
