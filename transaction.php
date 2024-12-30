@@ -346,7 +346,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             }
 
             // Check if shippingCost contains only numbers and thousand separators
-            var shippingCostPattern = /^[0-9,]+$/;
+            var shippingCostPattern = /^[0-9.]+$/;
             if (!shippingCostPattern.test(shippingCost)) {
                 alert("Shipping Cost must contain only numbers and thousand separators.");
                 return false;

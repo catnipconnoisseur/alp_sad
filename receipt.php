@@ -193,7 +193,7 @@ if (count($cartChunks) <= 0) {
                                     <?php if ($pageIndex === count($cartChunks) - 1) { ?>
                                         <tr>
                                             <td colspan="3" style="border: none; text-align: right;">Grand Total Rp. &nbsp;</td>
-                                            <td><?= number_format($grandTotal, 0, ',', '.'); ?></td>
+                                            <td><?= $grandTotal ?></td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
