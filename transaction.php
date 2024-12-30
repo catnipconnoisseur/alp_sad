@@ -94,7 +94,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         <div class="p-5" style="width: 100%;">
             <a href="./addProductTransaction.php" class="btn d-flex justify-content-center align-items-center" style="padding: 0; width: 211px; height: 43px; color: white; font-family: PoppinsMedium; font-size: 20px; background-color: #374375"><img src="./asset/plus.png" style="width: 24px; height: 24px; margin-right: 15px" alt=""><span>Add Product</span></a>
         </div>
-        <div class="row">
+        <div class="d-flex flex-wrap align-items-stretch row">
             <?php
             foreach ($products as $key => $p) {
                 $imagePath = './asset/' . $p['Images'];
@@ -111,13 +111,15 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                         <div class="d-flex justify-content-center" style="width: 100%;">
                             <img src="<?= $imagePath ?>" class="m-2" style="height: 250px" alt="">
                         </div>
-                        <div class="d-flex justify-content-between align-items-center" style="width: 100%;">
-                            <div>
-                                <div id="name" style="font-size: 20px"><?= $p['Nama_Produk'] ?></div>
-                                <div id="price" style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Harga_Jual'], 0, ',', '.'); ?></div>
+                        <div class="row" style="width: 100%;">
+                            <div class="col-9">
+                                <div id="name" class="text-wrap" style="font-size: 20px"><?= $p['Nama_Produk'] ?></div>
+                                <div id="price" class="d-flex justify-content-start align-items-center" style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Harga_Jual'], 0, ',', '.'); ?></div>
                             </div>
-                            <div>
-                                <button class="btn" id="editButton" style="color: #374375" data-index="<?= $key ?>" data-id="<?= $p['ID_Produk'] ?>">Edit</button>
+                            <div class="col-3 d-flex align-items-center">
+                                <button class="btn" id="editButton" style="color: #374375" data-index="<?= $key ?>" data-id="<?= $p['ID_Produk'] ?>"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16">
+                                        <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z" />
+                                    </svg> Edit</button>
                             </div>
                         </div>
                         <div class="d-flex justify-content-center" style="width: 100%;">
@@ -382,21 +384,29 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         $(".btn#editButton").click(function() {
             var index = $(this).data("index");
             var productId = $(this).data("id");
-            var isEdit = $(this).text() === "Edit";
-            var productDiv = $(this).closest('.d-flex.justify-content-between.align-items-center');
+            var isEdit = $(this).text().trim() === "Edit";
+            var productDiv = $(this).closest('.row');
             var nameDiv = productDiv.find("#name");
             var priceDiv = productDiv.find("#price");
 
             if (isEdit) {
-                $(this).text("Save");
+                $(this).html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M13.485 1.515a.5.5 0 0 1 .707 0l.707.707a.5.5 0 0 1 0 .707l-8 8a.5.5 0 0 1-.708 0L1.5 7.207a.5.5 0 0 1 0-.707l.707-.707a.5.5 0 0 1 .707 0L6 9.293l7.485-7.778z"/></svg> Save');
                 var name = nameDiv.text();
-                var price = priceDiv.text().replace('Rp. ', '').replace(/\./g, '');
-                nameDiv.html('<input type="text" class="form-control" value="' + name + '">');
-                priceDiv.html('Rp. <input type="text" class="form-control" value="' + price + '">');
+                var price = priceDiv.text().replace('Rp. ', '');
+                nameDiv.html('<input type="text" class="form-control" style="height:30px; font-size: 20px" value="' + name + '">');
+                priceDiv.html('Rp. <input type="text" class="my-1 form-control" style="font-family: PoppinsSemiBold; height:30px; font-size: 22px" value="' + price + '">');
+                priceDiv.find("input").on('input', function() {
+                    var value = $(this).val().replace(/\D/g, ''); // Remove non-digit characters
+                    if (value === "") {
+                        $(this).val("");
+                    } else {
+                        $(this).val(parseInt(value).toLocaleString('de-DE')); // Add thousand separators with dot
+                    }
+                });
             } else {
-                $(this).text("Edit");
+                $(this).html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg> Edit');
                 var newName = nameDiv.find("input").val();
-                var newPrice = priceDiv.find("input").val();
+                var newPrice = priceDiv.find("input").val().replace(/\./g, '');
                 nameDiv.text(newName);
                 priceDiv.text('Rp. ' + parseInt(newPrice).toLocaleString('de-DE'));
 
