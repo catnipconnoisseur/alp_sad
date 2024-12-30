@@ -34,6 +34,14 @@ $cartChunks = array_chunk($cart, $itemsPerPage);
 if (count($cartChunks) <= 0) {
     $cartChunks = [['error' => "tidak ada item di cart"]];
 } else {
+    $pdo->prepare("INSERT INTO TRANSAKSI(ID_Transaksi, Tanggal_Transaksi, Nama_Pembeli, Jumlah_Barang_Beli, Total_Harga_Bayar, Alamat, Biaya_Ongkir, status_del)
+        VALUES(:id_transaksi, :tanggaltransaksi, :namapembeli, 0, 0, :alamat, :biayaongkir, '1');")->execute([
+        'id_transaksi' => $noNota,
+        'tanggaltransaksi' => $date->format('Y-m-d H:i:s'),
+        'namapembeli' => $_POST['customerName'],
+        'alamat' => $_POST['address'],
+        'biayaongkir' => $_POST['shippingCost']
+    ]);
     foreach ($_SESSION['cart'] as $c) {
         if ($c['ID_Produk'] == -1) {
             continue;
