@@ -168,7 +168,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             </table>
         </div>
         <div class="px-2" style="width: 100%">
-            <form id="formTransaksi" action="./receipt.php" style="width: 100%">
+            <form id="formTransaksi" action="./receipt.php" method="POST" style="width: 100%">
                 <div class="row d-flex align-items-center">
                     <div class="col-5">
                         <span style="font-size: 16px">Customer Name </span>
@@ -357,6 +357,8 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             // Show confirmation alert
             if (!confirm("Are you sure you want to submit the transaction?")) {
                 event.preventDefault();
+            } else {
+                this.submit();
             }
         });
         // Add thousand separators to shipping cost input
