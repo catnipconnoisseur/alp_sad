@@ -324,7 +324,6 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
         // Prevent form submission and show confirmation alert
         $("#formTransaksi").submit(function(event) {
-            event.preventDefault(); // Prevent the form from submitting
             // Check if any field is empty
             var customerName = $("input[name='customerName']").val().trim();
             var address = $("input[name='address']").val().trim();
@@ -332,16 +331,19 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
             if (customerName === "") {
                 alert("Customer Name field cannot be empty.");
+                event.preventDefault();
                 return false;
             }
 
             if (address === "") {
                 alert("Address field cannot be empty.");
+                event.preventDefault();
                 return false;
             }
 
             if (shippingCost === "") {
                 alert("Shipping Cost field cannot be empty.");
+                event.preventDefault();
                 return false;
             }
 
@@ -349,11 +351,12 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             var shippingCostPattern = /^[0-9.]+$/;
             if (!shippingCostPattern.test(shippingCost)) {
                 alert("Shipping Cost must contain only numbers and thousand separators.");
+                event.preventDefault();
                 return false;
             }
             // Show confirmation alert
-            if (confirm("Are you sure you want to submit the transaction?")) {
-                this.submit(); // Submit the form if the user confirms
+            if (!confirm("Are you sure you want to submit the transaction?")) {
+                event.preventDefault();
             }
         });
         // Add thousand separators to shipping cost input
@@ -370,7 +373,6 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         // Alert if non-numeric input is detected
         $("input[name='shippingCost']").on('keypress', function(event) {
             if (event.which < 48 || event.which > 57) {
-                alert("Please enter only numbers.");
                 event.preventDefault();
             }
         });
