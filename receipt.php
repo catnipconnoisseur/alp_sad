@@ -25,7 +25,7 @@ if (count($cart) > 0) {
     ];
 }
 
-$grandTotal = $_POST['grandTotal'];
+$grandTotal = isset($_POST['grandTotal']) ? $_POST['grandTotal'] : 0;
 
 $itemsPerPage = 10;
 
@@ -152,7 +152,7 @@ if (count($cartChunks) <= 0) {
                         </div>
                     </div>
                     <div class="mx-4 mb-5" style="font-family: InterSemiBold; font-size: 36px; color: #4F5F7F;">
-                        Thank You!
+
                     </div>
                 </div>
             <?php
