@@ -1,7 +1,10 @@
 <?php
 require_once('./header.php');
 
-$noNota = "T221205001";
+$q = $pdo->prepare("SELECT fGenTransactionId();");
+$q->execute();
+
+$noNota = $q->fetchColumn();
 
 $date = new DateTime();
 
@@ -9,17 +12,20 @@ $day = $date->format('d');
 $month = (int)$date->format('m');
 $year = $date->format('Y');
 
-$formattedDate = $day . ' ' . $month . ' ' . $year;
-
-$grandTotal = 0;
-
-if (isset($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $c) {
-        $grandTotal += $c['Total_Harga'];
-    }
-}
+$formattedDate = $day . '/' . $month . '/' . $year;
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
+if (count($cart) > 0) {
+    $cart[] = [
+        'ID_Produk' => -1,
+        'Nama_Produk' => "Shipping Cost",
+        'Jumlah_Produk' => '',
+        'Harga_Produk' => '',
+        'Total_Harga' => $_POST['shippingCost']
+    ];
+}
+
+$grandTotal = $_POST['grandTotal'];
 
 $itemsPerPage = 10;
 
@@ -27,6 +33,24 @@ $cartChunks = array_chunk($cart, $itemsPerPage);
 
 if (count($cartChunks) <= 0) {
     $cartChunks = [['error' => "tidak ada item di cart"]];
+} else {
+    foreach ($_SESSION['cart'] as $c) {
+        if ($c['ID_Produk'] == -1) {
+            continue;
+        }
+        $pdo->prepare("CALL pCreateTransaction(:id_transaksi, :namapembeli, :jumlahtotal, :totalbayar, :alamat, :biayaongkir, :idproduk, :jumlahsatuan, :hargasatuan, :totalharga)")->execute([
+            'id_transaksi' => $noNota,
+            'namapembeli' => $_POST['customerName'],
+            'jumlahtotal' => $c['Jumlah_Produk'],
+            'totalbayar' => $_POST['Total_Harga'],
+            'alamat' => $_POST['address'],
+            'biayaongkir' => $_POST['shippingCost'],
+            'idproduk' => $c['ID_Produk'],
+            'jumlahsatuan' => $c['Jumlah_Produk'],
+            'hargasatuan' => $c['Harga_Produk'],
+            'totalharga' => $c['Total_Harga']
+        ]);
+    }
 }
 
 ?>

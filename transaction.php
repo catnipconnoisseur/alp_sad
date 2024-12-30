@@ -97,7 +97,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         <div class="row">
             <?php
             foreach ($products as $key => $p) {
-                $imagePath = './asset/' . $p['Images'] . '.png';
+                $imagePath = './asset/' . $p['Images'];
                 $initialQuantity = 0;
                 foreach ($cart as $cartItem) {
                     if ($cartItem['ID_Produk'] == $p['ID_Produk']) {
@@ -168,13 +168,13 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             </table>
         </div>
         <div class="px-2" style="width: 100%">
-            <form style="width: 100%">
+            <form id="formTransaksi" action="./receipt.php" style="width: 100%">
                 <div class="row d-flex align-items-center">
                     <div class="col-5">
                         <span style="font-size: 16px">Customer Name </span>
                     </div>
                     <div class="col-7">
-                        <input class="form-control mt-2" name="curtomerName" type="text">
+                        <input class="form-control mt-2" name="customerName" type="text">
                     </div>
                 </div>
                 <div class="row d-flex align-items-center">
@@ -198,11 +198,19 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                         <span style="font-size: 16px">Total </span>
                     </div>
                     <div class="col-7">
-                        <input class="form-control mt-2" name="total" type="text">
+                        <input class="form-control mt-2" name="total" type="text" readonly>
+                    </div>
+                </div>
+                <div class="row d-flex align-items-center">
+                    <div class="col-5">
+                        <span style="font-size: 16px">Grand Total </span>
+                    </div>
+                    <div class="col-7">
+                        <input class="form-control mt-2" name="grandTotal" type="text" readonly>
                     </div>
                 </div>
                 <div class="d-flex justify-content-center align-item-center mt-3">
-                    <a href="./receipt.php" class="btn d-flex justify-content-center align-items-center" style="padding: 0; font-family: PoppinsMedium; font-size: 20px; width: 239px; height: 43px; background-color: #374375; color: white" type="submit"><img src="./asset/receipt.png" style="width: 24px; height: 24px; margin-right: 15px" alt="">Generate Receipt</a>
+                    <button class="btn d-flex justify-content-center align-items-center" style="padding: 0; font-family: PoppinsMedium; font-size: 20px; width: 239px; height: 43px; background-color: #374375; color: white" type="submit"><img src="./asset/receipt.png" style="width: 24px; height: 24px; margin-right: 15px" alt="">Generate Receipt</button>
                 </div>
             </form>
         </div>
@@ -212,6 +220,26 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
+        // Function to format numbers with thousand separators
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Function to update total and grand total fields
+        function updateTotals() {
+            var total = 0;
+            $("#cart-items tr").each(function() {
+                var rowTotal = parseInt($(this).find("td:last").text().replace(/\./g, '')) || 0;
+                total += rowTotal;
+            });
+
+            $("input[name='total']").val(formatNumber(total).replace(/,/g, '.'));
+
+            var shippingCost = parseInt($("input[name='shippingCost']").val().replace(/\./g, '')) || 0;
+            var grandTotal = total + shippingCost;
+            $("input[name='grandTotal']").val(formatNumber(grandTotal).replace(/,/g, '.'));
+        }
+
         // Increase button functionality
         $(".increase").click(function() {
             var index = $(this).data("index");
@@ -243,6 +271,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                             '</tr>';
                     });
                     $("#cart-items").html(cartHtml); // Update the table with new cart items
+                    updateTotals(); // Update totals
                 }
             });
         });
@@ -279,8 +308,70 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                                 '</tr>';
                         });
                         $("#cart-items").html(cartHtml);
+                        updateTotals(); // Update totals
                     }
                 });
+            }
+        });
+
+        // Update totals when shipping cost changes
+        $("input[name='shippingCost']").on('input', function() {
+            updateTotals();
+        });
+
+        // Initial update of totals
+        updateTotals();
+
+        // Prevent form submission and show confirmation alert
+        $("#formTransaksi").submit(function(event) {
+            event.preventDefault(); // Prevent the form from submitting
+            // Check if any field is empty
+            var customerName = $("input[name='customerName']").val().trim();
+            var address = $("input[name='address']").val().trim();
+            var shippingCost = $("input[name='shippingCost']").val().trim();
+
+            if (customerName === "") {
+                alert("Customer Name field cannot be empty.");
+                return false;
+            }
+
+            if (address === "") {
+                alert("Address field cannot be empty.");
+                return false;
+            }
+
+            if (shippingCost === "") {
+                alert("Shipping Cost field cannot be empty.");
+                return false;
+            }
+
+            // Check if shippingCost contains only numbers and thousand separators
+            var shippingCostPattern = /^[0-9,]+$/;
+            if (!shippingCostPattern.test(shippingCost)) {
+                alert("Shipping Cost must contain only numbers and thousand separators.");
+                return false;
+            }
+            // Show confirmation alert
+            if (confirm("Are you sure you want to submit the transaction?")) {
+                this.submit(); // Submit the form if the user confirms
+            }
+        });
+        // Add thousand separators to shipping cost input
+        $("input[name='shippingCost']").on('input', function() {
+            var value = $(this).val().replace(/\D/g, ''); // Remove non-digit characters
+            if (value === "") {
+                $(this).val("");
+            } else {
+                $(this).val(parseInt(value).toLocaleString('de-DE')); // Add thousand separators with dot
+            }
+            updateTotals();
+        });
+
+        // Alert if non-numeric input is detected
+        $("input[name='shippingCost']").on('keypress', function(event) {
+            if (event.which < 48 || event.which > 57) {
+                alert("Please enter only numbers.");
+                event.preventDefault();
             }
         });
     });

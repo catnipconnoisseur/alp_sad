@@ -107,7 +107,9 @@ $complete_order = $query_complete_order->fetch();
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" style="color: #374375;" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16">
                     <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2m.995-14.901a1 1 0 1 0-1.99 0A5 5 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901" />
                 </svg>
-                <div class="bg-white mx-3" style="border: 1px solid black; border-radius: 50%; height: 50px; width: 55px;"></div>
+                <div class="bg-white mx-3" style="border: 1px solid black; border-radius: 50%; height: 50px; width: 55px;">
+                    <img src="./asset/user.png" style="height: 100%; width: 100%" alt="profileIcon">
+                </div>
             </div>
             <div class="container mt-5">
                 <div class="d-flex justify-content-around align-items-center px-5" style="font-family: PoppinsMedium; font-size: 32px;">
@@ -122,66 +124,6 @@ $complete_order = $query_complete_order->fetch();
                     </div>
                 </div>
                 <p style="font-family: PoppinsSemiBold; font-size: 48px; color: #374375; width: 100%; margin-left: 160px; margin-top: 100px">Best Selling Product</p>
-                <!-- <div class=" bg-white px-3" style="border-radius: 10px; width: 890px; margin-left: 160px">
-                    <table class="text-center" style="width: 100%; font-family:PoppinsMedium; font-size:24px">
-                        <thead style="color: red">
-                            <tr class="row my-3">
-                                <td class="d-flex justify-content-center align-items-center col-2"><img src="./asset/medal.png" alt=""> Rank</td>
-                                <td class="col-5">Product</td>
-                                <td class="col-5">Total Sales</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="row my-3">
-                                <td class="d-flex justify-content-center align-items-center col-2"><img src="./asset/goldmedal.png" style="width: 60px" alt=""></td>
-                                <td class="col-5">sad</td>
-                                <td class="col-5">asd</td>
-                            </tr>
-                            <tr class="row my-3">
-                                <td class="d-flex justify-content-center align-items-center col-2"><img src="./asset/silvermedal.png" style="width: 60px" alt=""></td>
-                                <td class="col-5">sad</td>
-                                <td class="col-5">asd</td>
-                            </tr>
-                            <tr class="row my-3">
-                                <td class="d-flex justify-content-center align-items-center col-2"><img src="./asset/bronzemedal.png" style="width: 60px" alt=""></td>
-                                <td class="col-5">sad</td>
-                                <td class="col-5">asd</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div> -->
-                <!-- <div class="bg-white px-3" style="border-radius: 10px; width: 890px; margin-left: 160px">
-                    <table class="text-center" style="width: 100%; font-family:PoppinsMedium; font-size:24px">
-                        <thead style="color: red">
-                            <tr class="row my-3">
-                                <td class="d-flex justify-content-center align-items-center col-2"><img src="./asset/medal.png" alt=""> Rank</td>
-                                <td class="col-5">Product</td>
-                                <td class="col-5">Total Sales</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                            // Loop through the $products array and display each product
-                            $medals = ["goldmedal.png", "silvermedal.png", "bronzemedal.png"]; // Medal icons for the top 3 ranks
-                            foreach ($products as $index => $product) {
-                                if ($index < 3) { // Top 3 only
-                                    $medal = $medals[$index];
-                                } else {
-                                    $medal = "regularmedal.png"; // Placeholder for ranks beyond top 3
-                                }
-                                echo '
-                <tr class="row my-3">
-                    <td class="d-flex justify-content-center align-items-center col-2">
-                        <img src="./asset/' . $medal . '" style="width: 60px" alt="">
-                    </td>
-                    <td class="col-5">' . htmlspecialchars($product['BestSellingProducts']) . '</td>
-                    <td class="col-5">' . htmlspecialchars($product['TotalSales'] ?? 'N/A') . '</td>
-                </tr>';
-                            }
-                            ?>
-                        </tbody>
-                    </table>
-                </div> -->
                 <div class="bg-white px-3" style="border-radius: 10px; width: 890px; margin-left: 160px">
                     <table class="text-center" style="width: 100%; font-family:PoppinsMedium; font-size:24px">
                         <thead style="color: red">

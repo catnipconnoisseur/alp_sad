@@ -61,7 +61,7 @@ foreach ($_SESSION['cart'] as $c) {
     $cartItems[] = [
         'Nama_Produk' => $c['Nama_Produk'],
         'Jumlah_Produk' => $c['Jumlah_Produk'],
-        'Harga_Produk' => $c['Harga_Produk'],
+        'Harga_Produk' => number_format($c['Harga_Produk'], 0, ',', '.'),
         'Total_Harga' => number_format($c['Total_Harga'], 0, ',', '.'),
         'row_color' => $even ? '#9FA4EA' : '#FFFFFF'
     ];

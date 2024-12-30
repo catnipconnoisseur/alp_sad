@@ -76,7 +76,7 @@ $products = $q->fetchAll();
         <div class="row">
             <?php
             foreach ($products as $p) {
-                $imagePath = './asset/' . $p['Images'] . '.png';
+                $imagePath = './asset/' . $p['Images'];
             ?>
                 <div class="col-4 p-5">
                     <div class="px-3" style="background-color: #BABDE2; border: none">
