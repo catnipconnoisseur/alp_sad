@@ -97,7 +97,11 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         <div class="d-flex flex-wrap align-items-stretch row">
             <?php
             foreach ($products as $key => $p) {
-                $imagePath = './asset/' . $p['Images'];
+                if ($p['Images'] == null) {
+                    $imagePath = './asset/box.png';
+                } else {
+                    $imagePath = './asset/' . $p['Images'];
+                }
                 $initialQuantity = 0;
                 foreach ($cart as $cartItem) {
                     if ($cartItem['ID_Produk'] == $p['ID_Produk']) {

@@ -10,6 +10,27 @@ require_once('./header.php');
     .form-control::placeholder {
         color: white;
     }
+
+    .form-control[type="file"] {
+        background-color: #BABDE2 !important;
+        color: white !important;
+        border: 1px solid #374375 !important;
+        height: 62px !important;
+    }
+
+    .form-control[type="file"]::file-selector-button {
+        background-color: #374375 !important;
+        color: white !important;
+        border: 0 !important;
+        border-radius: 10px !important;
+        height: 100% !important;
+        margin: 0 15px 0 0 !important;
+    }
+
+    .form-control[type="file"]::file-selector-button:hover {
+        background-color: #BABDE2 !important;
+        cursor: pointer !important;
+    }
 </style>
 
 <div class="row" style="min-height: 100vh; width: 100vw">
@@ -81,18 +102,30 @@ require_once('./header.php');
     </div>
     <div class="col-9">
         <h1 class="text-left mx-5 mt-5 d-flex justify-content-start align-items-center" style="font-family: PoppinsBold; font-size:48px; color: #FFFCF5; width: 100%"><a href="./transaction.php"><img src="./asset/arrow.png" style="margin-right: 20px" alt=""></a>Add Product</h1>
-        <form class="d-flex align-items-end flex-column mx-5 mt-3" action="">
+        <form class="d-flex align-items-end flex-column mx-5 mt-3" action="add_product.php" method="POST" enctype="multipart/form-data">
             <label class="form-label text-left mt-5" style="font-family: PoppinsMedium; font-size:24px; color: #000000; width: 100%">Products Name</label>
-            <input type="text" class="form-control" style="background-color: #BABDE2; color: white; border: 1px solid #374375; height: 62px" placeholder="ex : semen putih">
+            <input type="text" class="form-control" name="productName" style="background-color: #BABDE2; color: white; border: 1px solid #374375; height: 62px" placeholder="ex : semen putih">
             <label class="form-label text-left mt-5" style="font-family: PoppinsMedium; font-size:24px; color: #000000; width: 100%">Price</label>
-            <input type="text" class="form-control" style="background-color: #BABDE2; color: white; border: 1px solid #374375; height: 62px" placeholder="ex : Rp.50.000">
+            <input type="text" class="form-control" name="price" style="background-color: #BABDE2; color: white; border: 1px solid #374375; height: 62px" placeholder="ex : 50.000">
             <label class="form-label text-left mt-5" style="font-family: PoppinsMedium; font-size:24px; color: #000000; width: 100%">Photo (Optional)</label>
-            <input type="file" class="form-control p-3" style="background-color: #BABDE2; color: white; border: 1px solid #374375; height: 62px" name="" id="">
+            <input type="file" class="form-control p-2" name="image" accept=".jpg, .png, .jpeg, .svg, .webp">
             <button type="submit" class="btn mt-5" style="background-color: #374375; color: white; width: 114px">Save</button>
         </form>
-
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const priceInput = document.querySelector('input[name="price"]');
+
+        priceInput.addEventListener('input', function(e) {
+            let value = e.target.value;
+            value = value.replace(/\D/g, '');
+            value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            e.target.value = value;
+        });
+    });
+</script>
 
 <?php
 require_once('./footer.php');
