@@ -196,6 +196,55 @@ $product_array = explode(",", $product_list);
     </div>
 </div>
 
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3" style="background-color: #BABDE2">
+            <div class="modal-header mb-3" style="color: #374375; border: none; padding: 0; margin: 0;">
+                <h5 class="modal-title" id="notificationModalLabel">Low Stock Notification</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalBody" style="color: #374375; margin: 0; padding: 0; height: 50px">
+                <!-- Notification content will be inserted here -->
+            </div>
+            <div class="modal-footer" style="border: none; padding: 0; margin: 0;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('.bi-bell-fill').addEventListener('click', function() {
+            fetch('notify_low_stock.php')
+                .then(response => response.json())
+                .then(data => {
+                    let modalBody = document.querySelector('#modalBody');
+                    let closeButton = document.querySelector('.modal-footer .btn');
+                    if (data.length > 0) {
+                        let message = "Produk dengan stok rendah:<br>";
+                        data.forEach(item => {
+                            message += `- ${item.Nama_Produk}: ${item.Stock_Tersedia} unit<br>`;
+                        });
+                        modalBody.innerHTML = message;
+                        closeButton.classList.remove('btn-secondary');
+                        closeButton.classList.add('btn-warning');
+                    } else {
+                        modalBody.innerHTML = "Semua produk memiliki stok mencukupi.";
+                        closeButton.classList.remove('btn-warning');
+                        closeButton.classList.add('btn-secondary');
+                    }
+                    new bootstrap.Modal(document.getElementById('notificationModal')).show();
+                })
+                .catch(error => {
+                    document.querySelector('#modalBody').innerHTML = `Kesalahan database: ${error.message}`;
+                    new bootstrap.Modal(document.getElementById('notificationModal')).show();
+                });
+        });
+    });
+</script>
+
 
 <?php
 require_once('./footer.php');
