@@ -1,12 +1,38 @@
 <?php
 require_once('./header.php');
 
-$q = $pdo->prepare("select fBestSellingProducts() as BestSellingProducts;");
+$q = $pdo->prepare("SELECT 
+    fBestSellingProducts() as BestSellingProducts,
+    p.ID_Produk, 
+    p.Nama_Produk,
+    IFNULL(SUM(d.Jumlah_Produk), 0) AS Total_Sales
+FROM 
+    PRODUK p
+LEFT JOIN 
+    DETAIL_TRANSAKSI d ON p.ID_Produk = d.ID_Produk
+GROUP BY 
+    p.ID_Produk
+ORDER BY 
+    Total_Sales DESC
+LIMIT 3;");
 $q->execute();
-$products = $q->fetchAll();
+$products = $q->fetchAll(PDO::FETCH_ASSOC);
 $product_list = $products[0]['BestSellingProducts'];
 $product_array = explode(",", $product_list);
 
+$query_current_order = $pdo->prepare("SELECT COUNT(ID_Transaksi) AS 'Current Order'
+                                       FROM TRANSAKSI
+                                       WHERE DATE(Tanggal_Transaksi) = CURDATE()
+                                       AND HOUR(Tanggal_Transaksi) = HOUR(NOW())");
+$query_current_order->execute();
+$current_order = $query_current_order->fetch();
+
+
+$query_complete_order = $pdo->prepare("SELECT COUNT(ID_Transaksi) AS 'Complete Order'
+                                        FROM TRANSAKSI
+                                        WHERE Tanggal_Transaksi < CURDATE() AND Tanggal_Transaksi < NOW();");
+$query_complete_order->execute();
+$complete_order = $query_complete_order->fetch();
 ?>
 
 <style>
@@ -85,12 +111,13 @@ $product_array = explode(",", $product_list);
             </div>
             <div class="container mt-5">
                 <div class="d-flex justify-content-around align-items-center px-5" style="font-family: PoppinsMedium; font-size: 32px;">
-                    <div class=" bg-white px-3" style="border-radius: 10px; width: 322px">
-                        <p style="font-size: 48px; height: 50px">0</p>
+                    <div class="bg-white px-3" style="border-radius: 10px; width: 322px">
+                        <p style="font-size: 48px; height: 50px"><?= $current_order['Current Order']; ?></p>
                         <p style="color: red">Current Order</p>
                     </div>
-                    <div class=" bg-white px-3" style="border-radius: 10px; width: 322px">
-                        <p style="font-size: 48px; height: 50px">0</p>
+
+                    <div class="bg-white px-3" style="border-radius: 10px; width: 322px">
+                        <p style="font-size: 48px; height: 50px"><?= $complete_order['Complete Order']; ?></p>
                         <p style="color: red">Completed Order</p>
                     </div>
                 </div>
@@ -170,23 +197,37 @@ $product_array = explode(",", $product_list);
                             $medals = ["goldmedal.png", "silvermedal.png", "bronzemedal.png"];
 
                             // Loop through the product array and display each product in its respective rank
-                            foreach ($product_array as $index => $product) {
-                                if ($index < 3) { // Only the top 3 ranks will have medals
-                                    $medal = $medals[$index];
-                                } else {
-                                    $medal = "regularmedal.png"; // Placeholder for ranks beyond the top 3
-                                }
+                            // foreach ($product_array as $index => $product) {
+                            if (is_array($products) && count($products) > 0) {
+                                foreach ($products as $index => $product) {
+                                    // Assign medals based on the index
+                                    $medal = '';
+                                    switch ($index) {
+                                        case 0:
+                                            $medal = 'goldmedal.png';  // Gold medal for the top product
+                                            break;
+                                        case 1:
+                                            $medal = 'silvermedal.png';  // Silver medal for the second product
+                                            break;
+                                        case 2:
+                                            $medal = 'bronzemedal.png';  // Bronze medal for the third product
+                                            break;
+                                    }
 
-                                // Display each product in the table
-                                echo '
-                <tr class="row my-3">
-                    <td class="d-flex justify-content-center align-items-center col-2">
-                        <img src="./asset/' . $medal . '" style="width: 60px" alt="">
-                    </td>
-                    <td class="col-5">' . htmlspecialchars(trim($product)) . '</td>
-                    <td class="col-5">N/A</td> <!-- Placeholder for total sales -->
-                </tr>';
+                                    // Output the product information with the appropriate medal
+                                    echo '
+                                        <tr class="row my-3">
+                                            <td class="d-flex justify-content-center align-items-center col-2">
+                                                <img src="./asset/' . $medal . '" style="width: 60px" alt="Medal">
+                                            </td>
+                                            <td class="col-5">' . htmlspecialchars(trim($product['Nama_Produk'])) . '</td>
+                                            <td class="col-5">' . (isset($product['Total_Sales']) ? number_format($product['Total_Sales'], 0, '.', ',') : 'N/A') . '</td>
+                                        </tr>';
+                                }
+                            } else {
+                                echo "No products found.";
                             }
+                            // }
                             ?>
                         </tbody>
                     </table>
@@ -213,7 +254,6 @@ $product_array = explode(",", $product_list);
         </div>
     </div>
 </div>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('.bi-bell-fill').addEventListener('click', function() {
@@ -244,7 +284,6 @@ $product_array = explode(",", $product_list);
         });
     });
 </script>
-
 
 <?php
 require_once('./footer.php');
