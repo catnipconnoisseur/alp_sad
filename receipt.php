@@ -21,7 +21,7 @@ if (count($cart) > 0) {
         'Nama_Produk' => "Shipping Cost",
         'Jumlah_Produk' => '',
         'Harga_Produk' => 0,
-        'Total_Harga' => $_POST['shippingCost']
+        'Total_Harga' => str_replace('.', '', $_POST['shippingCost'])
     ];
 }
 
@@ -40,7 +40,7 @@ if (count($cartChunks) <= 0) {
         'tanggaltransaksi' => $date->format('Y-m-d H:i:s'),
         'namapembeli' => $_POST['customerName'],
         'alamat' => $_POST['address'],
-        'biayaongkir' => $_POST['shippingCost']
+        'biayaongkir' => str_replace('.', '', $_POST['shippingCost'])
     ]);
     foreach ($_SESSION['cart'] as $c) {
         if ($c['ID_Produk'] == -1) {
@@ -52,7 +52,7 @@ if (count($cartChunks) <= 0) {
             'jumlahtotal' => $c['Jumlah_Produk'],
             'totalbayar' => $c['Total_Harga'],
             'alamat' => $_POST['address'],
-            'biayaongkir' => $_POST['shippingCost'],
+            'biayaongkir' => str_replace('.', '', $_POST['shippingCost']),
             'idproduk' => $c['ID_Produk'],
             'jumlahsatuan' => $c['Jumlah_Produk'],
             'hargasatuan' => $c['Harga_Produk'],
