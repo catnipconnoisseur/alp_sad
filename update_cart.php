@@ -53,6 +53,16 @@ if ($action == 'add') {
             }
         }
     }
+} elseif ($action == 'update') {
+    $newPrice = str_replace(".", "", $_POST['newPrice']);
+    foreach ($_SESSION['cart'] as &$cartItem) {
+        if ($cartItem['ID_Produk'] == $product['ID_Produk']) {
+            $cartItem['Nama_Produk'] = $_POST['newName'];
+            $cartItem['Harga_Produk'] = $newPrice;
+            $cartItem['Total_Harga'] = $cartItem['Jumlah_Produk'] * $newPrice;
+            break;
+        }
+    }
 }
 
 $cartItems = [];

@@ -113,11 +113,11 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                         </div>
                         <div class="d-flex justify-content-between align-items-center" style="width: 100%;">
                             <div>
-                                <div style="font-size: 20px"><?= $p['Nama_Produk'] ?></div>
-                                <div style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Harga_Jual'], 0, '.', ','); ?></div>
+                                <div id="name" style="font-size: 20px"><?= $p['Nama_Produk'] ?></div>
+                                <div id="price" style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Harga_Jual'], 0, ',', '.'); ?></div>
                             </div>
                             <div>
-                                <button class="btn" style="color: #374375">Edit</button>
+                                <button class="btn" id="editButton" style="color: #374375" data-index="<?= $key ?>" data-id="<?= $p['ID_Produk'] ?>">Edit</button>
                             </div>
                         </div>
                         <div class="d-flex justify-content-center" style="width: 100%;">
@@ -376,6 +376,79 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         $("input[name='shippingCost']").on('keypress', function(event) {
             if (event.which < 48 || event.which > 57) {
                 event.preventDefault();
+            }
+        });
+
+        $(".btn#editButton").click(function() {
+            var index = $(this).data("index");
+            var productId = $(this).data("id");
+            var isEdit = $(this).text() === "Edit";
+            var productDiv = $(this).closest('.d-flex.justify-content-between.align-items-center');
+            var nameDiv = productDiv.find("#name");
+            var priceDiv = productDiv.find("#price");
+
+            if (isEdit) {
+                $(this).text("Save");
+                var name = nameDiv.text();
+                var price = priceDiv.text().replace('Rp. ', '').replace(/\./g, '');
+                nameDiv.html('<input type="text" class="form-control" value="' + name + '">');
+                priceDiv.html('Rp. <input type="text" class="form-control" value="' + price + '">');
+            } else {
+                $(this).text("Edit");
+                var newName = nameDiv.find("input").val();
+                var newPrice = priceDiv.find("input").val();
+                nameDiv.text(newName);
+                priceDiv.text('Rp. ' + parseInt(newPrice).toLocaleString('de-DE'));
+
+                // Save the updated product information to the database
+                $.ajax({
+                    url: 'update_product.php',
+                    method: 'POST',
+                    data: {
+                        productIndex: productId,
+                        newName: newName,
+                        newPrice: newPrice
+                    },
+                    success: function(response) {
+                        var jsonResponse = JSON.parse(response);
+                        if (jsonResponse.success) {
+                            alert("Product updated successfully.");
+
+                            // Update the cart session via AJAX to reflect the changes
+                            $.ajax({
+                                url: 'update_cart.php',
+                                method: 'POST',
+                                data: {
+                                    action: 'update',
+                                    productIndex: index,
+                                    newName: newName,
+                                    newPrice: newPrice,
+                                    quantity: -1
+                                },
+                                dataType: 'json', // Expect JSON response
+                                success: function(response) {
+                                    // Update the cart display with the new cart items
+                                    var cartHtml = '';
+                                    $.each(response, function(i, item) {
+                                        cartHtml += '<tr style="background-color: ' + item.row_color + ';">' +
+                                            '<td>' + item.Nama_Produk + '</td>' +
+                                            '<td>' + item.Jumlah_Produk + '</td>' +
+                                            '<td>' + item.Harga_Produk + '</td>' +
+                                            '<td>' + item.Total_Harga + '</td>' +
+                                            '</tr>';
+                                    });
+                                    $("#cart-items").html(cartHtml);
+                                    updateTotals(); // Update totals
+                                },
+                                error: function() {
+                                    alert("Failed to update cart.");
+                                }
+                            });
+                        } else {
+                            alert("Failed to update product.");
+                        }
+                    }
+                });
             }
         });
     });
