@@ -1,13 +1,57 @@
 <?php
 require_once('./header.php');
 
+$month = [
+    1 => 'January',
+    2 => 'February',
+    3 => 'March',
+    4 => 'April',
+    5 => 'May',
+    6 => 'June',
+    7 => 'July',
+    8 => 'August',
+    9 => 'September',
+    10 => 'October',
+    11 => 'November',
+    12 => 'December',
+];
+
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    $tahun = $_GET['tahun'];
+    $bulan = $_GET['bulan'];
+
+    try {
+        $q = $pdo->prepare("SELECT SUM(Jumlah_Biaya) FROM BIAYA_OPERASIONAL WHERE Jenis_Biaya = ? AND MONTH(Tanggal_Biaya) = ? AND YEAR(Tanggal_Biaya) = ?;");
+        $q->execute(['Listrik Air', $bulan, $tahun]);
+        $waterElectricity = $q->fetchColumn();
+        $q->execute(['Transportasi', $bulan, $tahun]);
+        $transportation = $q->fetchColumn();
+        $q->execute(['Gaji', $bulan, $tahun]);
+        $salary = $q->fetchColumn();
+        $q->execute(['Biaya Tak Terduga', $bulan, $tahun]);
+        $unexpected = $q->fetchColumn();
+        $q = $pdo->prepare("SELECT IFNULL(SUM(Total_Harga_Bayar), 0) AS totaltransaksi FROM TRANSAKSI WHERE MONTH(Tanggal_Transaksi) = ? AND YEAR(Tanggal_Transaksi) = ?;");
+        $q->execute([
+            date('m'),
+            date('Y'),
+        ]);
+        $totalTransaksi = $q->fetch()['totaltransaksi'];
+        $q = $pdo->prepare("CALL pGenCashFlow(?, ?);");
+        $q->execute([$month[$bulan], $tahun]);
+        $cashFlow = $q->fetch()['totalcashflow'];
+        $cashFlow = (int) $cashFlow * -1;
+    } catch (PDOException $e) {
+        echo $e->getMessage();
+    }
+}
+
 $report = [
-    'transaction' => 1950000,
-    'waterElectricity' => 450000,
-    'transportation' => 150000,
-    'salary' => 1000000,
-    'unexpected' => 100000,
-    'cashFlow' => 250000
+    'transaction' => $totalTransaksi ?? 0,
+    'waterElectricity' => $waterElectricity ?? 0,
+    'transportation' => $transportation ?? 0,
+    'salary' => $salary ?? 0,
+    'unexpected' => $unexpected ?? 0,
+    'cashFlow' => $cashFlow ?? 0,
 ]
 
 ?>
