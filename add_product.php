@@ -9,7 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $photoName = str_replace(' ', '_', strtolower($productName)) . '.' . $photoExtension;
     $dbPath = "FotoProduk/" . $photoName;
     $dbPath = "FotoProduk/" . $photo;
-    $id = strtoupper(substr($productName, 0, 1));
+    $q = $pdo->prepare("SELECT fGenProductId(?);");
+    $q->execute([$productName]);
+    $id = $q->fetchColumn();
     $q = $pdo->prepare("SELECT MAX(SUBSTR(`ID_Produk`, 2, 3)) AS max_id FROM PRODUK WHERE `ID_Produk` LIKE CONCAT(:id, '%');");
     $q->execute(['id' => $id]);
     $maxid = $q->fetch()['max_id'];

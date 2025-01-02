@@ -1,10 +1,11 @@
 <?php
 require_once('./header.php');
+require_once('./connection.php');
 
-$q = $pdo->prepare("select * from PRODUK;");
+$q = $pdo->prepare("SELECT * FROM PRODUK;");
 $q->execute();
 $products = $q->fetchAll();
-
+$returnCart = $_SESSION['return_cart'] ?? [];
 ?>
 
 <style>
@@ -84,7 +85,13 @@ $products = $q->fetchAll();
         <div class="row">
             <?php
             foreach ($products as $key => $p) {
-                $imagePath = './asset/' . $p['Images'];
+                $imagePath = $p['Images'] ? './asset/' . $p['Images'] : './asset/box.png';
+                $cartItem = array_filter($returnCart, function ($item) use ($p) {
+                    return $item['ID_Produk'] === $p['ID_Produk'];
+                });
+                $cartItem = reset($cartItem);
+                $quantity = $cartItem['Jumlah_Produk_Retur'] ?? 0;
+                $reason = $cartItem['Jenis_Retur'] ?? '';
             ?>
                 <div class="col-4 p-5">
                     <div class="px-3" style="background-color: #BABDE2; border: none">
@@ -96,12 +103,12 @@ $products = $q->fetchAll();
                         <div class="d-flex justify-content-center" style="width: 100%;">
                             <div class="btn d-flex justify-content-between align-items-center overflow-hidden text-white" style="padding: 0; width: 130px; height: 30px; background-color: #374375; border-radius: 50px; border: none;">
                                 <button class="btn btn-outline-secondary decrease" style="color: white; padding: 0; border-radius: 50%; width: 30px; height: 30px; border: 3px solid white;" data-index="<?= $key ?>">-</button>
-                                <div id="input-<?= $key ?>" class="count-value">0</div>
+                                <div id="input-<?= $key ?>" class="count-value"><?= $quantity ?></div>
                                 <button class="btn btn-outline-secondary increase" style="color: white; padding: 0; border-radius: 50%; width: 30px; height: 30px; border: 3px solid white;" data-index="<?= $key ?>">+</button>
                             </div>
                         </div>
                         <span style="font-size: 20px;">Reason</span>
-                        <input class="form-control" id="reason-<?= $key ?>" style="width: 100%; height: 43px;"> </input>
+                        <input class="form-control reason-input" id="reason-<?= $key ?>" style="width: 100%; height: 43px;" value="<?= $reason ?>" <?= $quantity == 0 ? 'disabled' : '' ?> data-index="<?= $key ?>"> </input>
                     </div>
                 </div>
             <?php
@@ -109,28 +116,91 @@ $products = $q->fetchAll();
             ?>
         </div>
     </div>
-    <button class="btn text-white position-sticky" style="bottom: 40px; left: 1450px; width: 150px; background-color: #374375; font-family:PoppinsMedium; font-size: 20px">Done</button>
+    <button id="done-button" class="btn text-white position-sticky" style="bottom: 40px; left: 1450px; width: 150px; background-color: #374375; font-family:PoppinsMedium; font-size: 20px">Done</button>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Increase button functionality
+        var reasonTimeout;
+        var productIds = <?= json_encode(array_column($products, 'ID_Produk')) ?>;
+
+        function updateCart(action, index, reason = '') {
+            var productId = productIds[index];
+            $.ajax({
+                url: 'update_return_cart.php',
+                type: 'POST',
+                data: {
+                    action: action,
+                    productId: productId,
+                    reason: reason
+                },
+                success: function(response) {
+                    var data = JSON.parse(response);
+                    if (data.success) {
+                        var currentValue = parseInt($("#input-" + index).text());
+                        if (action === 'increase') {
+                            $("#input-" + index).text(currentValue + 1);
+                            $("#reason-" + index).prop('disabled', false);
+                        } else if (action === 'decrease') {
+                            if (currentValue - 1 == 0) {
+                                $("#input-" + index).text(0);
+                                $("#reason-" + index).prop('disabled', true);
+                            } else {
+                                $("#input-" + index).text(currentValue - 1);
+                            }
+                        }
+                        console.log(data.cart);
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            });
+        }
+
         $(".increase").click(function() {
             var index = $(this).data("index");
-            var currentValue = parseInt($("#input-" + index).text());
-            $("#input-" + index).text(currentValue + 1); // Increment by 1
-            console.log("increased");
+            var reason = $("#reason-" + index).val();
+            updateCart('increase', index, reason);
         });
 
-        // Decrease button functionality
         $(".decrease").click(function() {
             var index = $(this).data("index");
             var currentValue = parseInt($("#input-" + index).text());
             if (currentValue > 0) {
-                $("#input-" + index).text(currentValue - 1); // Decrement by 1, ensure it doesn't go below 0
-                console.log("decreased");
+                updateCart('decrease', index);
+            } else {
+                alert("Quantity is already zero");
             }
+        });
+
+        $(".reason-input").on('input', function() {
+            var index = $(this).data("index");
+            var reason = $(this).val();
+            clearTimeout(reasonTimeout);
+            reasonTimeout = setTimeout(function() {
+                updateCart('update_reason', index, reason);
+            }, 500);
+        });
+
+        $("#done-button").click(function() {
+            if (<?= empty($returnCart) ? 'true' : 'false' ?>) {
+                alert("Return cart is empty");
+                return;
+            }
+            $.ajax({
+                url: 'commit_return.php',
+                type: 'POST',
+                success: function(response) {
+                    var data = JSON.parse(response);
+                    if (data.success) {
+                        alert("Return committed successfully!");
+                        location.reload(); // Reload the page to reset the view
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            });
         });
     });
 </script>
