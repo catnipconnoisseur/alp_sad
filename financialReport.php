@@ -96,7 +96,7 @@ $month = [
                     <a href="./purchase.php" class="nav-link d-flex justify-content-start align-items-center" style="font-size: 24px; height: 50px">
                         <img src="./asset/basket.png" style="width: 32px; height: 32px" alt="homeIcon">
                         <p style="margin-top: 13px; margin-left: 20px">Purchase</p>
-                        <img src="./asset/up-arrow.png" style="width: 32px; height: 32px" alt="homeIcon">
+                        <img src="./asset/down-arrow.png" style="width: 32px; height: 32px" alt="homeIcon">
                     </a>
                 </li>
                 <li class="nav-item text-white px-5 my-2">
