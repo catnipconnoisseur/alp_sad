@@ -12,6 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $q->execute([$productName]);
     $id = $q->fetchColumn();
 
+    // Insert product into database
+    try {
+        $stmt = $pdo->prepare("INSERT INTO PRODUK(ID_Produk, Nama_Produk, Total_Harga_Beli, Images, status_del) VALUES (:id, :name, :price, :photo, '1')");
+        $stmt->execute(['id' => $id, 'name' => $productName, 'price' => $price, 'photo' => $dbPath]);
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+        exit;
+    }
+
     // Handle file upload and conversion to .webp
     if ($photo) {
         $targetDir = "asset/FotoProduk/";
@@ -42,11 +51,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             imagedestroy($image);
         }
     }
-
-    // Insert product into database
-    $sql = "INSERT INTO PRODUK(ID_Produk, Nama_Produk, Total_Harga_Beli, Images, status_del) VALUES (:id, :name, :price, :photo, '1')";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['id' => $id, 'name' => $productName, 'price' => $price, 'photo' => $dbPath]);
 
     header("Location: transaction.php");
     exit();
