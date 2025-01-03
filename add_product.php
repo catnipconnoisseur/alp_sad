@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Convert image to .webp
         $image = null;
+        $width = 0;
+        $height = 0;
         switch ($photoExtension) {
             case 'jpg':
             case 'jpeg':
@@ -47,7 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         if ($image) {
-            imagewebp($image, $targetFile);
+            $width = imagesx($image);
+            $height = imagesy($image);
+            $size = min($width, $height);
+            $x = ($width - $size) / 2;
+            $y = ($height - $size) / 2;
+
+            $croppedImage = imagecrop($image, ['x' => $x, 'y' => $y, 'width' => $size, 'height' => $size]);
+            if ($croppedImage) {
+                imagewebp($croppedImage, $targetFile);
+                imagedestroy($croppedImage);
+            }
             imagedestroy($image);
         }
     }
