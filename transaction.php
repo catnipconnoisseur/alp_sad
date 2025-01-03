@@ -97,11 +97,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         <div class="d-flex flex-wrap align-items-stretch row">
             <?php
             foreach ($products as $key => $p) {
-                if ($p['Images'] == null) {
-                    $imagePath = './asset/box.png';
-                } else {
-                    $imagePath = './asset/' . $p['Images'];
-                }
+                $imagePath = $p['Images'] ? '   asset/' . $p['Images'] . '.webp' : './asset/box.png';
                 $initialQuantity = 0;
                 foreach ($cart as $cartItem) {
                     if ($cartItem['ID_Produk'] == $p['ID_Produk']) {
@@ -392,6 +388,8 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             var productDiv = $(this).closest('.row');
             var nameDiv = productDiv.find("#name");
             var priceDiv = productDiv.find("#price");
+            var imageDiv = productDiv.closest('.px-3').find("img");
+            var originalImagePath = imageDiv.attr('src');
 
             if (isEdit) {
                 $(this).html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check" viewBox="0 0 16 16"><path d="M13.485 1.515a.5.5 0 0 1 .707 0l.707.707a.5.5 0 0 1 0 .707l-8 8a.5.5 0 0 1-.708 0L1.5 7.207a.5.5 0 0 1 0-.707l.707-.707a.5.5 0 0 1 .707 0L6 9.293l7.485-7.778z"/></svg> Save');
@@ -407,22 +405,34 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                         $(this).val(parseInt(value).toLocaleString('de-DE')); // Add thousand separators with dot
                     }
                 });
+
+                // Change image to file input
+                imageDiv.replaceWith('<div class="m-2" style="height: 250px; width: 250px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px dashed #ccc;"><input type="file" class="form-control-file" style="display: none;" id="file-input-' + index + '"><button class="btn btn-secondary" style="color: white; font-family: PoppinsMedium; font-size: 20px; background-color: #374375" onclick="$(\'#file-input-' + index + '\').click();">Choose File</button></div>');
             } else {
                 $(this).html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg> Edit');
                 var newName = nameDiv.find("input").val();
                 var newPrice = priceDiv.find("input").val().replace(/\./g, '');
+                var fileInput = $("#file-input-" + index)[0];
+                var newImage = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
                 nameDiv.text(newName);
                 priceDiv.text('Rp. ' + parseInt(newPrice).toLocaleString('de-DE'));
+
+                var formData = new FormData();
+                formData.append('productIndex', productId);
+                formData.append('newName', newName);
+                formData.append('newPrice', newPrice);
+                if (newImage) {
+                    formData.append('newImage', newImage);
+                }
 
                 // Save the updated product information to the database
                 $.ajax({
                     url: 'update_product.php',
                     method: 'POST',
-                    data: {
-                        productIndex: productId,
-                        newName: newName,
-                        newPrice: newPrice
-                    },
+                    data: formData,
+                    processData: false,
+                    contentType: false,
                     success: function(response) {
                         var jsonResponse = JSON.parse(response);
                         if (jsonResponse.success) {
@@ -456,6 +466,23 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                                 },
                                 error: function() {
                                     alert("Failed to update cart.");
+                                }
+                            });
+
+                            // Fetch the updated image path from the database
+                            $.ajax({
+                                url: 'fetch_image.php',
+                                method: 'POST',
+                                data: {
+                                    productId: productId
+                                },
+                                success: function(response) {
+                                    var newImagePath = response.trim();
+                                    $("#file-input-" + index).closest('.m-2').replaceWith('<img src="' + newImagePath + '" class="m-2" style="height: 250px" alt="">');
+                                },
+                                error: function(response) {
+                                    console.log(response);
+                                    alert("Failed to fetch updated image.");
                                 }
                             });
                         } else {

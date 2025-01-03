@@ -85,7 +85,7 @@ $returnCart = $_SESSION['return_cart'] ?? [];
         <div class="row">
             <?php
             foreach ($products as $key => $p) {
-                $imagePath = $p['Images'] ? './asset/' . $p['Images'] : './asset/box.png';
+                $imagePath = $p['Images'] ? './asset/' . $p['Images'] . '.webp' : './asset/box.png';
                 $cartItem = array_filter($returnCart, function ($item) use ($p) {
                     return $item['ID_Produk'] === $p['ID_Produk'];
                 });
