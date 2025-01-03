@@ -13,7 +13,7 @@ try {
     $pdo->beginTransaction();
 
     foreach ($returnCart as $item) {
-        $q = $pdo->prepare("INSERT INTO RETUR (ID_Produk, Nama_Produk, Jumlah_Produk_Retur, Harga_Produk_Return, Total_Harga_Retur, Jenis_Retur) VALUES (?, ?, ?, ?, ?, ?)");
+        $q = $pdo->prepare("CALL pCreateReturn(?, ?, ?, ?, ?, ?)");
         $q->execute([
             $item['ID_Produk'],
             $item['Nama_Produk'],

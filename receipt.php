@@ -12,7 +12,7 @@ $day = $date->format('d');
 $month = (int)$date->format('m');
 $year = $date->format('Y');
 
-$formattedDate = $day . '/' . $month . '/' . $year;
+$formattedDate = "{$day}/{$month}/{$year}";
 
 $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 if (count($cart) > 0) {
@@ -34,10 +34,9 @@ $cartChunks = array_chunk($cart, $itemsPerPage);
 if (count($cartChunks) <= 0) {
     $cartChunks = [['error' => "tidak ada item di cart"]];
 } else {
-    $pdo->prepare("INSERT INTO TRANSAKSI(ID_Transaksi, Tanggal_Transaksi, Nama_Pembeli, Jumlah_Barang_Beli, Total_Harga_Bayar, Alamat, Biaya_Ongkir, status_del)
-        VALUES(:id_transaksi, :tanggaltransaksi, :namapembeli, 0, 0, :alamat, :biayaongkir, '1');")->execute([
+    $pdo->prepare("INSERT INTO TRANSAKSI(ID_Transaksi, Nama_Pembeli, Jumlah_Barang_Beli, Total_Harga_Bayar, Alamat, Biaya_Ongkir, status_del)
+        VALUES(:id_transaksi, :namapembeli, 0, 0, :alamat, :biayaongkir, '1');")->execute([
         'id_transaksi' => $noNota,
-        'tanggaltransaksi' => $date->format('Y-m-d H:i:s'),
         'namapembeli' => $_POST['customerName'],
         'alamat' => $_POST['address'],
         'biayaongkir' => str_replace('.', '', $_POST['shippingCost'])
@@ -46,17 +45,26 @@ if (count($cartChunks) <= 0) {
         if ($c['ID_Produk'] == -1) {
             continue;
         }
-        $pdo->prepare("CALL pCreateTransaction(:id_transaksi, :namapembeli, :jumlahtotal, :totalbayar, :alamat, :biayaongkir, :idproduk, :jumlahsatuan, :hargasatuan, :totalharga)")->execute([
-            'id_transaksi' => $noNota,
-            'namapembeli' => $_POST['customerName'],
-            'jumlahtotal' => $c['Jumlah_Produk'],
-            'totalbayar' => $c['Total_Harga'],
-            'alamat' => $_POST['address'],
-            'biayaongkir' => str_replace('.', '', $_POST['shippingCost']),
+        $pdo->prepare("INSERT INTO DETAIL_TRANSAKSI(ID_Produk, ID_Transaksi, Jumlah_Produk, Harga_Satuan, Total_Harga, status_del) VALUES (:idproduk, :id_transaksi, :jumlahsatuan, :hargasatuan, :totalharga, '1')")->execute([
             'idproduk' => $c['ID_Produk'],
+            'id_transaksi' => $noNota,
             'jumlahsatuan' => $c['Jumlah_Produk'],
             'hargasatuan' => $c['Harga_Produk'],
             'totalharga' => $c['Total_Harga']
+        ]);
+
+        $q = $pdo->prepare("SELECT Jumlah_Barang_Beli FROM TRANSAKSI WHERE ID_Transaksi = ?;");
+        $q->execute([$noNota]);
+        $currentJumlahDibeli = $q->fetchColumn();
+
+        $q = $pdo->prepare("SELECT Total_Harga_Bayar FROM TRANSAKSI WHERE ID_Transaksi = ?;");
+        $q->execute([$noNota]);
+        $currentTotalHargaBayar = $q->fetchColumn();
+
+        $pdo->prepare("UPDATE TRANSAKSI SET Jumlah_Barang_Beli = ?, Total_Harga_Bayar = ? WHERE ID_Transaksi = ?;")->execute([
+            $currentJumlahDibeli + $c['Jumlah_Produk'],
+            $currentTotalHargaBayar + $c['Total_Harga'],
+            $noNota
         ]);
     }
 }

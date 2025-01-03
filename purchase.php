@@ -5,6 +5,7 @@ $q = $pdo->prepare("select * from PRODUK;");
 $q->execute();
 $products = $q->fetchAll();
 
+$purchaseCart = isset($_SESSION['purchase_cart']) ? $_SESSION['purchase_cart'] : [];
 ?>
 
 <style>
@@ -89,19 +90,26 @@ $products = $q->fetchAll();
             <?php
             foreach ($products as $key => $p) {
                 $imagePath = $p['Images'] ? './asset/' . $p['Images'] . '.webp' : './asset/box.png';
+                $initialQuantity = 0;
+                foreach ($purchaseCart as $cartItem) {
+                    if ($cartItem['ID_Produk'] == $p['ID_Produk']) {
+                        $initialQuantity = $cartItem['Jumlah_Produk_Beli'];
+                        break;
+                    }
+                }
             ?>
-                <div class="col-4    p-5">
+                <div class="col-4 p-5">
                     <div class="px-3" style="background-color: #BABDE2; border: none">
                         <div class="d-flex justify-content-center" style="width: 100%;">
                             <img src="<?= $imagePath ?>" class="m-2" style="height: 250px" alt="">
                         </div>
                         <div style="font-size: 20px;"><?= $p['Nama_Produk'] ?></div>
-                        <div style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Harga_Jual'], 0, '.', ','); ?></div>
+                        <div style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Total_Harga_Beli'], 0, ',', '.'); ?></div>
                         <div class="d-flex justify-content-center" style="width: 100%;">
                             <div class="btn d-flex justify-content-between align-items-center overflow-hidden text-white" style="padding: 0; width: 130px; height: 30px; background-color: #374375; border-radius: 50px; border: none;">
-                                <button class="btn btn-outline-secondary decrease" style="color: white; padding: 0; border-radius: 50%; width: 30px; height: 30px; border: 3px solid white;" data-index="<?= $key ?>">-</button>
-                                <div id="input-<?= $key ?>" class="count-value">0</div>
-                                <button class="btn btn-outline-secondary increase" style="color: white; padding: 0; border-radius: 50%; width: 30px; height: 30px; border: 3px solid white;" data-index="<?= $key ?>">+</button>
+                                <button class="btn btn-outline-secondary decrease" style="color: white; padding: 0; border-radius: 50%; width: 30px; height: 30px; border: 3px solid white;" data-index="<?= $key ?>" data-product-id="<?= $p['ID_Produk'] ?>">-</button>
+                                <div id="input-<?= $key ?>" class="count-value"><?= $initialQuantity ?></div>
+                                <button class="btn btn-outline-secondary increase" style="color: white; padding: 0; border-radius: 50%; width: 30px; height: 30px; border: 3px solid white;" data-index="<?= $key ?>" data-product-id="<?= $p['ID_Produk'] ?>">+</button>
                             </div>
                         </div>
                     </div>
@@ -117,12 +125,31 @@ $products = $q->fetchAll();
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
+        // Function to update the purchase cart
+        function updateCart(productId, action) {
+            $.ajax({
+                url: 'update_purchase_cart.php',
+                type: 'POST',
+                data: {
+                    productId: productId,
+                    action: action
+                },
+                success: function(response) {
+                    var data = JSON.parse(response);
+                    if (!data.success) {
+                        console.log('Failed to update cart.');
+                    }
+                }
+            });
+        }
+
         // Increase button functionality
         $(".increase").click(function() {
             var index = $(this).data("index");
             var currentValue = parseInt($("#input-" + index).text());
             $("#input-" + index).text(currentValue + 1); // Increment by 1
-            console.log("increased");
+            var productId = $(this).data("product-id");
+            updateCart(productId, 'increase');
         });
 
         // Decrease button functionality
@@ -131,11 +158,31 @@ $products = $q->fetchAll();
             var currentValue = parseInt($("#input-" + index).text());
             if (currentValue > 0) {
                 $("#input-" + index).text(currentValue - 1); // Decrement by 1, ensure it doesn't go below 0
-                console.log("decreased");
+                var productId = $(this).data("product-id");
+                updateCart(productId, 'decrease');
             }
+        });
+
+        // Done button functionality
+        $(".btn.position-sticky").click(function() {
+            $.ajax({
+                url: 'finalize_purchase.php',
+                type: 'POST',
+                success: function(response) {
+                    var data = JSON.parse(response);
+                    if (data.success) {
+                        alert('Purchase completed successfully!');
+                        // Reset the cart and update the view
+                        $(".count-value").text('0');
+                    } else {
+                        alert('Failed to complete the purchase.');
+                    }
+                }
+            });
         });
     });
 </script>
 
 <?php
 require_once('./footer.php');
+?>

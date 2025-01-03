@@ -99,7 +99,7 @@ $returnCart = $_SESSION['return_cart'] ?? [];
                             <img src="<?= $imagePath ?>" class="m-2" style="height: 250px" alt="">
                         </div>
                         <div style="font-size: 20px"><?= $p['Nama_Produk'] ?></div>
-                        <div style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Harga_Jual'], 0, '.', ','); ?></div>
+                        <div style="font-family: PoppinsSemiBold; font-size: 22px">Rp. <?= number_format($p['Total_Harga_Beli'], 0, ',', '.'); ?></div>
                         <div class="d-flex justify-content-center" style="width: 100%;">
                             <div class="btn d-flex justify-content-between align-items-center overflow-hidden text-white" style="padding: 0; width: 130px; height: 30px; background-color: #374375; border-radius: 50px; border: none;">
                                 <button class="btn btn-outline-secondary decrease" style="color: white; padding: 0; border-radius: 50%; width: 30px; height: 30px; border: 3px solid white;" data-index="<?= $key ?>">-</button>
@@ -150,7 +150,6 @@ $returnCart = $_SESSION['return_cart'] ?? [];
                                 $("#input-" + index).text(currentValue - 1);
                             }
                         }
-                        console.log(data.cart);
                     } else {
                         alert(data.message);
                     }
