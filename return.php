@@ -156,6 +156,7 @@ $returnCart = $_SESSION['return_cart'] ?? [];
                 },
                 success: function(response) {
                     var data = JSON.parse(response);
+                    console.log(data.cart);
                     if (data.success) {
                         var currentValue = parseInt($("#input-" + index).text());
                         if (action === 'increase') {
@@ -177,6 +178,7 @@ $returnCart = $_SESSION['return_cart'] ?? [];
         }
 
         function showNotificationModal(title, message) {
+            $("#modalBody img").attr('src', title === 'Success' ? './asset/checked.png' : './asset/no.png');
             $('#modalBody #status').text(title);
             $('#modalBody .text-center').text(message);
             $('#notificationModal').modal('show');
@@ -208,7 +210,7 @@ $returnCart = $_SESSION['return_cart'] ?? [];
         });
 
         $("#done-button").click(function() {
-            if (<?= empty($returnCart) ? 'true' : 'false' ?>) {
+            if (<?= !isset($_SESSION['return_cart']) && count($_SESSION['return_cart']) <= 0 ? 'true' : 'false' ?>) {
                 showNotificationModal('Error', 'Return cart is empty');
                 return;
             }
@@ -219,7 +221,8 @@ $returnCart = $_SESSION['return_cart'] ?? [];
                     var data = JSON.parse(response);
                     if (data.success) {
                         showNotificationModal('Success', 'Your return data has been successfully recorded!');
-                        location.reload(); // Reload the page to reset the view
+                        // Reload the products section
+                        $(".col-9 .row").load(location.href + " .col-9 .row > *");
                     } else {
                         showNotificationModal('Error', data.message);
                     }

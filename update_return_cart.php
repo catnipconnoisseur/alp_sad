@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $currentCart[$cartItemKey]['Total_Harga_Retur'] = $currentCart[$cartItemKey]['Jumlah_Produk_Retur'] * $currentCart[$cartItemKey]['Harga_Produk_Return'];
                 }
                 $_SESSION['return_cart'] = array_values($currentCart);
-                echo json_encode(['success' => true, 'cart' => $currentCart]);
+                echo json_encode(['success' => true, 'cart' => $_SESSION['return_cart']]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Quantity is already zero']);
             }
