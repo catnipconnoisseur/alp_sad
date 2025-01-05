@@ -13,6 +13,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $q->execute([$productName]);
     $id = $q->fetchColumn();
 
+    // Validation
+    $errors = [];
+
+    if (empty($productName)) {
+        $errors[] = "Product name is required.";
+    }
+
+    if (empty($price) || !is_numeric(str_replace(".", "", $price))) {
+        $errors[] = "Valid price is required.";
+    }
+
+    if (empty($photo)) {
+        $errors[] = "Product image is required.";
+    }
+
+    // If validation fails, return error message
+    if (!empty($errors)) {
+        $_SESSION['notification']['status'] = "error";
+        $_SESSION['notification']['message'] = implode("<br>", $errors);
+        header("Location: addProductTransaction.php");
+        exit();
+    }
+
     // Insert product into database
     try {
         $stmt = $pdo->prepare("INSERT INTO PRODUK(ID_Produk, Nama_Produk, Total_Harga_Beli, Images, status_del) VALUES (:id, :name, :price, :photo, '1')");
