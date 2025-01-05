@@ -184,45 +184,50 @@ $complete_order = $query_complete_order->fetch();
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content p-3" style="background-color: #BABDE2">
             <div class="modal-header mb-3" style="color: #374375; border: none; padding: 0; margin: 0;">
-                <h5 class="modal-title" id="notificationModalLabel">Low Stock Notification</h5>
+                <h5 class="modal-title" id="notificationModalLabel"></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="modalBody" style="color: #374375; margin: 0; padding: 0; height: 50px">
-                <!-- Notification content will be inserted here -->
+            <div class="modal-body d-flex justify-content-center align-items-center flex-column" id="modalBody" style="color: #374375; margin: 0; padding: 0; font-family: PoppinsSemiBold; font-size: 40px;">
+                <img src="./asset/out-of-stock.png" style="height: 370px;" alt="Out Of Stock">
             </div>
-            <div class="modal-footer" style="border: none; padding: 0; margin: 0;">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <div class="modal-footer d-flex justify-content-center align-items-center" style="border: none; padding: 0; margin: 0;">
+                <a href="./purchase.php" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Include jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelector('.bi-bell-fill').addEventListener('click', function() {
-            fetch('notify_low_stock.php')
-                .then(response => response.json())
-                .then(data => {
-                    let modalBody = document.querySelector('#modalBody');
-                    let closeButton = document.querySelector('.modal-footer .btn');
-                    if (data.length > 0) {
-                        let message = "Produk dengan stok rendah:<br>";
-                        data.forEach(item => {
-                            message += `- ${item.Nama_Produk}: ${item.Stock_Tersedia} unit<br>`;
-                        });
-                        modalBody.innerHTML = message;
-                        closeButton.classList.remove('btn-secondary');
-                        closeButton.classList.add('btn-warning');
+    $(document).ready(function() {
+        $('.bi-bell-fill').on('click', function() {
+            $.ajax({
+                url: 'notify_low_stock.php',
+                method: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    let modalBody = $('#modalBody');
+                    let closeButton = $('.modal-footer .btn');
+                    console.log(response);
+                    if (response.data.length > 0) {
+                        let message = response.message;
+                        modalBody.html("<img src='./asset/out-of-stock.png' style='height: 370px;' alt='Out Of Stock'>" + message);
+                        closeButton.removeClass('btn-secondary').addClass('btn-primary');
+                        closeButton.html('BUY');
                     } else {
-                        modalBody.innerHTML = "Semua produk memiliki stok mencukupi.";
-                        closeButton.classList.remove('btn-warning');
-                        closeButton.classList.add('btn-secondary');
+                        modalBody.html("Semua produk memiliki stok mencukupi.");
+                        closeButton.removeClass('btn-primary').addClass('btn-secondary');
                     }
-                    new bootstrap.Modal(document.getElementById('notificationModal')).show();
-                })
-                .catch(error => {
-                    document.querySelector('#modalBody').innerHTML = `Kesalahan database: ${error.message}`;
-                    new bootstrap.Modal(document.getElementById('notificationModal')).show();
-                });
+                    $('#notificationModal').modal('show');
+                },
+                error: function(xhr, status, error) {
+                    $('#modalBody').html(`Kesalahan database: ${error}`);
+                    $('#notificationModal').modal('show');
+                }
+            });
         });
     });
 </script>
