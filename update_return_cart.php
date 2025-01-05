@@ -70,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($currentQuantity > 0) {
                 $currentCart[$cartItemKey]['Jenis_Retur'] = $reason;
                 $_SESSION['return_cart'] = $currentCart;
-                echo json_encode(['success' => true]);
+                echo json_encode(['success' => true, 'cart' => $_SESSION['return_cart']]);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Cannot update reason for item with zero quantity']);
             }

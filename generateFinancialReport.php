@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $q = $pdo->prepare("CALL pGenCashFlow(?, ?);");
         $q->execute([$month[$bulan], $tahun]);
         $cashFlow = $q->fetch()['totalcashflow'];
-        $cashFlow = (int) $cashFlow * -1;
+        $cashFlow = (int) $cashFlow;
     } catch (PDOException $e) {
         echo $e->getMessage();
     }
@@ -159,8 +159,8 @@ $report = [
                 <span class="col-5">Rp. <?= number_format($report['unexpected'], 0, ',', '.') ?>,-</span>
             </span>
             <span class="report-segment row d-flex align-items-center">
-                <span class="col-6">Cash Flow</span>
-                <span class="col-6">Rp. <?= number_format($report['cashFlow'], 0, ',', '.') ?>,-</span>
+                <span class="col-5">Cash Flow</span>
+                <span class="col-7" style="text-align: right;"><?= $report['cashFlow'] < 0 ? '-' : '' ?>Rp. <?= str_replace('-', '', number_format($report['cashFlow'], 0, ',', '.')) ?>,-</span>
             </span>
         </div>
     </div>

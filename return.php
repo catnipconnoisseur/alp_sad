@@ -156,7 +156,6 @@ $returnCart = $_SESSION['return_cart'] ?? [];
                 },
                 success: function(response) {
                     var data = JSON.parse(response);
-                    console.log(data.cart);
                     if (data.success) {
                         var currentValue = parseInt($("#input-" + index).text());
                         if (action === 'increase') {
