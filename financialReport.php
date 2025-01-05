@@ -137,7 +137,7 @@ $month = [
         </div>
     </div>
     <div class="col-9">
-        <form action="./addBiayaOperasional.php" method="POST" onsubmit="return validateForm()">
+        <form id="add" action="./addBiayaOperasional.php" method="POST">
             <h1 class="text-left mx-5 mt-5" style="font-family: PoppinsMedium; font-size:24px; color: #000000; width: 100%">Expense Category</h1>
             <select class="form-select text-white mx-5 mt-3" id="dropdown" name="expense_category" style="background-color: #374375; border-radius: 50px; width: 200px; height: 46px" data-bs-theme="dark">
                 <?php foreach ($expense_categories as $key => $value): ?>
@@ -285,7 +285,7 @@ $month = [
             return true;
         }
 
-        $('form').on('submit', validateForm);
+        $('form#add').on('submit', validateForm);
     });
 </script>
 <?php

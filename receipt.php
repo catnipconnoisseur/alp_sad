@@ -20,7 +20,7 @@ if (count($cart) > 0) {
         'ID_Produk' => -1,
         'Nama_Produk' => "Shipping Cost",
         'Jumlah_Produk' => '',
-        'Harga_Produk' => 0,
+        'Harga_Produk' => str_replace('.', '', $_POST['shippingCost']),
         'Total_Harga' => str_replace('.', '', $_POST['shippingCost'])
     ];
 }
