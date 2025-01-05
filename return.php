@@ -119,6 +119,25 @@ $returnCart = $_SESSION['return_cart'] ?? [];
     <button id="done-button" class="btn text-white position-sticky" style="bottom: 40px; left: 1450px; width: 150px; background-color: #374375; font-family:PoppinsMedium; font-size: 20px">Done</button>
 </div>
 
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3" style="background-color: #BABDE2">
+            <div class="modal-header mb-3" style="color: #374375; border: none; padding: 0; margin: 0;">
+                <h5 class="modal-title" id="notificationModalLabel"></h5>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center flex-column" id="modalBody" style="color: #374375; margin: 0; padding: 0; font-family: PoppinsSemiBold; font-size: 40px;">
+                <img src="<?= isset($status) && $status == 'success' ? './asset/checked.png' : './asset/no.png' ?>" alt="icon" style="height: 203px;">
+                <div id="status" style="font-family: PoppinsSemiBold; font-size: 48px"><?= isset($status) && $status == 'success' ? 'Success' : 'Error' ?></div>
+                <div class="text-center" style="font-size: 24px"><?= isset($message) ? $message : ''; ?></div>
+            </div>
+            <div class="modal-footer d-flex justify-content-center align-items-center" style="border: none; padding: 0; margin: 0;">
+                <button type="button" class='btn' style='height: 43px; width: 188px; color: white; background-color: #374375; font-family: PoppinsMedium; font-size: 20px;' data-bs-dismiss='modal'>OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
@@ -151,10 +170,16 @@ $returnCart = $_SESSION['return_cart'] ?? [];
                             }
                         }
                     } else {
-                        alert(data.message);
+                        showNotificationModal('Error', data.message);
                     }
                 }
             });
+        }
+
+        function showNotificationModal(title, message) {
+            $('#modalBody #status').text(title);
+            $('#modalBody .text-center').text(message);
+            $('#notificationModal').modal('show');
         }
 
         $(".increase").click(function() {
@@ -169,7 +194,7 @@ $returnCart = $_SESSION['return_cart'] ?? [];
             if (currentValue > 0) {
                 updateCart('decrease', index);
             } else {
-                alert("Quantity is already zero");
+                showNotificationModal('Error', 'Quantity is already zero');
             }
         });
 
@@ -184,7 +209,7 @@ $returnCart = $_SESSION['return_cart'] ?? [];
 
         $("#done-button").click(function() {
             if (<?= empty($returnCart) ? 'true' : 'false' ?>) {
-                alert("Return cart is empty");
+                showNotificationModal('Error', 'Return cart is empty');
                 return;
             }
             $.ajax({
@@ -193,10 +218,10 @@ $returnCart = $_SESSION['return_cart'] ?? [];
                 success: function(response) {
                     var data = JSON.parse(response);
                     if (data.success) {
-                        alert("Return committed successfully!");
+                        showNotificationModal('Success', 'Your return data has been successfully recorded!');
                         location.reload(); // Reload the page to reset the view
                     } else {
-                        alert(data.message);
+                        showNotificationModal('Error', data.message);
                     }
                 }
             });

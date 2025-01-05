@@ -1,5 +1,10 @@
 <?php
 require_once('./header.php');
+if (isset($_SESSION['notification'])) {
+    $status = $_SESSION['notification']['status'];
+    $message = $_SESSION['notification']['message'];
+    unset($_SESSION['notification']);
+}
 
 $q = $pdo->prepare("SELECT IFNULL(SUM(Total_Harga_Beli), 0) AS totalpembelian FROM PEMBELIAN WHERE MONTH(Tanggal_Pembelian) = ? AND YEAR(Tanggal_Pembelian) = ?;");
 $q->execute([
@@ -189,84 +194,99 @@ $month = [
         </form>
     </div>
 </div>
-</div>
+
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3" style="background-color: #BABDE2">
+            <div class="modal-header mb-3" style="color: #374375; border: none; padding: 0; margin: 0;">
+                <h5 class="modal-title" id="notificationModalLabel"></h5>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center flex-column" id="modalBody" style="color: #374375; margin: 0; padding: 0; font-family: PoppinsSemiBold; font-size: 40px;">
+                <img src="<?= isset($status) && $status == 'success' ? './asset/checked.png' : './asset/no.png' ?>" alt="icon" style="height: 203px;">
+                <div id="status" style="font-family: PoppinsSemiBold; font-size: 48px"><?= isset($status) && $status == 'success' ? 'Success' : 'Error' ?></div>
+                <div class="text-center" style="font-size: 24px"><?= isset($message) ? $message : ''; ?></div>
+            </div>
+            <div class="modal-footer d-flex justify-content-center align-items-center" style="border: none; padding: 0; margin: 0;">
+                <button type="button" class='btn' style='height: 43px; width: 188px; color: white; background-color: #374375; font-family: PoppinsMedium; font-size: 20px;' data-bs-dismiss='modal'>OK</button>
+            </div>
+        </div>
+    </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const dropdown = document.getElementById('dropdown');
+    $(document).ready(function() {
+        <?php if (isset($message)): ?>
+            var myModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            myModal.show();
+        <?php endif; ?>
 
-    dropdown.addEventListener('click', () => {
-        if (dropdown.classList.contains('open')) {
-            dropdown.classList.remove('open');
-        } else {
-            dropdown.classList.add('open');
-        }
-    });
+        const dropdown = $('#dropdown');
+        const dropdown2 = $('#bulan');
+        const tahunInput = $('#tahun');
+        const bulanInput = $('#bulan');
+        const totalSalesElement = $('#totalSales');
+        const totalExpenseElement = $('#totalExpense');
 
-    dropdown.addEventListener('blur', () => {
-        dropdown.classList.remove('open');
-    });
+        dropdown.on('click', function() {
+            $(this).toggleClass('open');
+        });
 
-    dropdown.addEventListener('change', () => {
-        dropdown.classList.remove('open');
-    });
+        dropdown.on('blur change', function() {
+            $(this).removeClass('open');
+        });
 
-    const dropdown2 = document.getElementById('bulan');
+        dropdown2.on('click', function() {
+            $(this).toggleClass('open');
+        });
 
-    dropdown2.addEventListener('click', () => {
-        if (dropdown2.classList.contains('open')) {
-            dropdown2.classList.remove('open');
-        } else {
-            dropdown2.classList.add('open');
-        }
-    });
+        dropdown2.on('blur change', function() {
+            $(this).removeClass('open');
+        });
 
-    dropdown2.addEventListener('blur', () => {
-        dropdown2.classList.remove('open');
-    });
+        function updateFinancialData() {
+            const tahun = tahunInput.val();
+            const bulan = bulanInput.val();
 
-    dropdown2.addEventListener('change', () => {
-        dropdown2.classList.remove('open');
-    });
-
-    const tahunInput = document.getElementById('tahun');
-    const bulanInput = document.getElementById('bulan');
-    const totalSalesElement = document.getElementById('totalSales');
-    const totalExpenseElement = document.getElementById('totalExpense');
-
-    function updateFinancialData() {
-        const tahun = tahunInput.value;
-        const bulan = bulanInput.value;
-
-        fetch(`./updateFinancialData.php?tahun=${tahun}&bulan=${bulan}`)
-            .then(response => response.json())
-            .then(data => {
-                totalSalesElement.textContent = data.totalSales;
-                totalExpenseElement.textContent = data.totalExpense;
-            })
-            .catch(error => console.error('Error fetching financial data:', error));
-    }
-
-    tahunInput.addEventListener('change', updateFinancialData);
-    bulanInput.addEventListener('change', updateFinancialData);
-
-    function validateForm() {
-        const dropdown = document.getElementById('dropdown');
-        const nominal = document.getElementById('nominal');
-
-        if (dropdown.value === "") {
-            alert("Please select an expense category.");
-            return false;
+            $.get(`./updateFinancialData.php?tahun=${tahun}&bulan=${bulan}`, function(data) {
+                totalSalesElement.text(data.totalSales);
+                totalExpenseElement.text(data.totalExpense);
+            }).fail(function(error) {
+                console.error('Error fetching financial data:', error);
+            });
         }
 
-        if (nominal.value.trim() === "") {
-            alert("Please enter a nominal value.");
-            return false;
+        tahunInput.on('change', updateFinancialData);
+        bulanInput.on('change', updateFinancialData);
+
+        function showNotificationModal(status, message) {
+            $('#status').text(status === 'success' ? 'Success' : 'Error');
+            $('.modal-body .text-center').text(message);
+            $('.modal-body img').attr('src', status === 'success' ? './asset/checked.png' : './asset/no.png');
+            $('#notificationModal').modal('show');
         }
 
-        return true;
-    }
+        function validateForm() {
+            const dropdown = $('#dropdown');
+            const nominal = $('#nominal');
+
+            if (dropdown.val() === "") {
+                showNotificationModal('error', 'Please select an expense category.');
+                return false;
+            }
+
+            if (nominal.val().trim() === "") {
+                showNotificationModal('error', 'Please enter a nominal value.');
+                return false;
+            }
+
+            return true;
+        }
+
+        $('form').on('submit', validateForm);
+    });
 </script>
-
 <?php
 require_once('./footer.php');

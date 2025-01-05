@@ -51,11 +51,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($image) {
-                imagewebp($image, $targetFile);
-                imagedestroy($image);
+                $width = imagesx($image);
+                $height = imagesy($image);
+                $size = min($width, $height);
+                $x = ($width - $size) / 2;
+                $y = ($height - $size) / 2;
 
-                // Move the uploaded file to the target directory
-                move_uploaded_file($newImage['tmp_name'], $targetFile);
+                $croppedImage = imagecreatetruecolor($size, $size);
+                imagecopyresampled($croppedImage, $image, 0, 0, $x, $y, $size, $size, $size, $size);
+                if (!imagewebp($croppedImage, $targetFile)) {
+                    echo json_encode(['success' => false, 'message' => 'Failed to convert the image to .webp.']);
+                }
+                imagedestroy($croppedImage);
+                imagedestroy($image);
 
                 // Update the image path in the database
                 $q = $pdo->prepare("UPDATE PRODUK SET Images = :dbPath WHERE ID_Produk = :productIndex");
@@ -69,18 +77,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if (file_exists($fullPath)) {
                         if (!unlink($fullPath)) {
-                            $response['success'] = false;
-                            $response['message'] = 'Failed to delete the old image file.';
+                            echo json_encode(['success' => false, 'message' => 'Failed to delete the old image file.']);
                         }
                     } else {
-                        $response['success'] = false;
-                        $response['message'] = 'The old image file does not exist.';
+                        echo json_encode(['success' => false, 'message' => 'The old image file does not exist.']);
                     }
                 }
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to create an image resource.']);
             }
         }
         echo json_encode($response);
     } else {
-        echo json_encode(['success' => false]);
+        echo json_encode(['success' => false, 'message' => 'Failed to update the product.']);
     }
 }

@@ -188,7 +188,6 @@ $complete_order = $query_complete_order->fetch();
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body d-flex justify-content-center align-items-center flex-column" id="modalBody" style="color: #374375; margin: 0; padding: 0; font-family: PoppinsSemiBold; font-size: 40px;">
-                <img src="./asset/out-of-stock.png" style="height: 370px;" alt="Out Of Stock">
             </div>
             <div class="modal-footer d-flex justify-content-center align-items-center" style="border: none; padding: 0; margin: 0;">
                 <a href="./purchase.php" class="btn btn-secondary" data-bs-dismiss="modal">Close</a>
@@ -210,16 +209,15 @@ $complete_order = $query_complete_order->fetch();
                 dataType: 'json',
                 success: function(response) {
                     let modalBody = $('#modalBody');
-                    let closeButton = $('.modal-footer .btn');
+                    let modalFooter = $('.modal-footer');
                     console.log(response);
                     if (response.data.length > 0) {
                         let message = response.message;
                         modalBody.html("<img src='./asset/out-of-stock.png' style='height: 370px;' alt='Out Of Stock'>" + message);
-                        closeButton.removeClass('btn-secondary').addClass('btn-primary');
-                        closeButton.html('BUY');
+                        modalFooter.html("<a href='./purchase.php' class='btn' style='height: 43px; width: 188px; color: white; background-color: #374375; font-family: PoppinsMedium; font-size: 20px;'>BUY</a>");
                     } else {
                         modalBody.html("Semua produk memiliki stok mencukupi.");
-                        closeButton.removeClass('btn-primary').addClass('btn-secondary');
+                        modalFooter.html("<button type='button' class='btn btn-secondary' data-bs-dismiss='modal' style='height: 43px; width: 188px; font-family: PoppinsMedium; font-size: 20px;'>Close</button>");
                     }
                     $('#notificationModal').modal('show');
                 },

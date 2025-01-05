@@ -122,6 +122,25 @@ $purchaseCart = isset($_SESSION['purchase_cart']) ? $_SESSION['purchase_cart'] :
     </div>
 </div>
 
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3" style="background-color: #BABDE2">
+            <div class="modal-header mb-3" style="color: #374375; border: none; padding: 0; margin: 0;">
+                <h5 class="modal-title" id="notificationModalLabel"></h5>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center flex-column" id="modalBody" style="color: #374375; margin: 0; padding: 0; font-family: PoppinsSemiBold; font-size: 40px;">
+                <img src="<?= isset($status) && $status == 'success' ? './asset/checked.png' : './asset/no.png' ?>" alt="icon" style="height: 203px;">
+                <div style="font-family: PoppinsSemiBold; font-size: 48px"><?= isset($status) && $status == 'success' ? 'Success' : 'Error' ?></div>
+                <div class="text-center" style="font-size: 24px"><?= isset($message) ? $message : ''; ?></div>
+            </div>
+            <div class="modal-footer d-flex justify-content-center align-items-center" style="border: none; padding: 0; margin: 0;">
+                <button type="button" class='btn' style='height: 43px; width: 188px; color: white; background-color: #374375; font-family: PoppinsMedium; font-size: 20px;' data-bs-dismiss='modal'>OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
@@ -171,11 +190,21 @@ $purchaseCart = isset($_SESSION['purchase_cart']) ? $_SESSION['purchase_cart'] :
                 success: function(response) {
                     var data = JSON.parse(response);
                     if (data.success) {
-                        alert('Purchase completed successfully!');
+                        // Show success modal
+                        $('#modalBody img').attr('src', './asset/checked.png');
+                        $('#modalBody div:nth-child(2)').text('Success');
+                        $('#modalBody div:nth-child(3)').text('Your purchase data has been successfully recorded');
+                        var myModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+                        myModal.show();
                         // Reset the cart and update the view
                         $(".count-value").text('0');
                     } else {
-                        alert('Failed to complete the purchase.');
+                        // Show error modal
+                        $('#modalBody img').attr('src', './asset/no.png');
+                        $('#modalBody div:nth-child(2)').text('Error');
+                        $('#modalBody div:nth-child(3)').text('Failed to complete the purchase.');
+                        var myModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+                        myModal.show();
                     }
                 }
             });

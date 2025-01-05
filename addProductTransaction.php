@@ -1,6 +1,14 @@
 <?php
 require_once('./header.php');
+if (isset($_SESSION['notification'])) {
+    $status = $_SESSION['notification']['status'];
+    $message = $_SESSION['notification']['message'];
+}
 ?>
+
+<!-- Include jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
     body {
@@ -114,18 +122,43 @@ require_once('./header.php');
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const priceInput = document.querySelector('input[name="price"]');
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3" style="background-color: #BABDE2">
+            <div class="modal-header mb-3" style="color: #374375; border: none; padding: 0; margin: 0;">
+                <h5 class="modal-title" id="notificationModalLabel"></h5>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center flex-column" id="modalBody" style="color: #374375; margin: 0; padding: 0; font-family: PoppinsSemiBold; font-size: 40px;">
+                <img src="<?= isset($status) && $status == 'success' ? './asset/checked.png' : './asset/no.png' ?>" alt="icon" style="height: 203px;">
+                <div style="font-family: PoppinsSemiBold; font-size: 48px"><?= isset($status) && $status == 'success' ? 'Success' : 'Error' ?></div>
+                <div class="text-center" style="font-size: 24px"><?= isset($message) ? $message : ''; ?></div>
+            </div>
+            <div class="modal-footer d-flex justify-content-center align-items-center" style="border: none; padding: 0; margin: 0;">
+                <button type="button" class='btn' style='height: 43px; width: 188px; color: white; background-color: #374375; font-family: PoppinsMedium; font-size: 20px;' data-bs-dismiss='modal'>OK</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        priceInput.addEventListener('input', function(e) {
-            let value = e.target.value;
+<script>
+    $(document).ready(function() {
+        $('input[name="price"]').on('input', function() {
+            let value = $(this).val();
             value = value.replace(/\D/g, '');
             value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            e.target.value = value;
+            $(this).val(value);
         });
+
+        // Show modal if notification exists
+        <?php if (isset($message)): ?>
+            var myModal = new bootstrap.Modal(document.getElementById('notificationModal'));
+            myModal.show();
+        <?php endif; ?>
     });
 </script>
 
 <?php
 require_once('./footer.php');
+unset($_SESSION['notification']);
+?>

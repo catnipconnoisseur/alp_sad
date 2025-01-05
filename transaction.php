@@ -219,6 +219,25 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
     </div>
 </div>
 
+<!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content p-3" style="background-color: #BABDE2">
+            <div class="modal-header mb-3" style="color: #374375; border: none; padding: 0; margin: 0;">
+                <h5 class="modal-title" id="notificationModalLabel"></h5>
+            </div>
+            <div class="modal-body d-flex justify-content-center align-items-center flex-column" id="modalBody" style="color: #374375; margin: 0; padding: 0; font-family: PoppinsSemiBold; font-size: 40px;">
+                <img src="<?= isset($status) && $status == 'success' ? './asset/checked.png' : './asset/no.png' ?>" alt="icon" style="height: 203px;">
+                <div id="status" style="font-family: PoppinsSemiBold; font-size: 48px"><?= isset($status) && $status == 'success' ? 'Success' : 'Error' ?></div>
+                <div class="text-center" style="font-size: 24px"><?= isset($message) ? $message : ''; ?></div>
+            </div>
+            <div class="modal-footer d-flex justify-content-center align-items-center" style="border: none; padding: 0; margin: 0;">
+                <button type="button" class='btn' style='height: 43px; width: 188px; color: white; background-color: #374375; font-family: PoppinsMedium; font-size: 20px;' data-bs-dismiss='modal'>OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
@@ -332,19 +351,19 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             var shippingCost = $("input[name='shippingCost']").val().trim();
 
             if (customerName === "") {
-                alert("Customer Name field cannot be empty.");
+                showNotificationModal('error', 'Customer Name field cannot be empty.');
                 event.preventDefault();
                 return false;
             }
 
             if (address === "") {
-                alert("Address field cannot be empty.");
+                showNotificationModal('error', 'Address field cannot be empty.');
                 event.preventDefault();
                 return false;
             }
 
             if (shippingCost === "") {
-                alert("Shipping Cost field cannot be empty.");
+                showNotificationModal('error', 'Shipping Cost field cannot be empty.');
                 event.preventDefault();
                 return false;
             }
@@ -352,7 +371,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             // Check if shippingCost contains only numbers and thousand separators
             var shippingCostPattern = /^[0-9.]+$/;
             if (!shippingCostPattern.test(shippingCost)) {
-                alert("Shipping Cost must contain only numbers and thousand separators.");
+                showNotificationModal('error', 'Shipping Cost must contain only numbers and thousand separators.');
                 event.preventDefault();
                 return false;
             }
@@ -381,6 +400,13 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             }
         });
 
+        function showNotificationModal(status, message) {
+            $("#status").text(status === 'success' ? 'Success' : 'Error');
+            $("#modalBody img").attr('src', status === 'success' ? './asset/checked.png' : './asset/no.png');
+            $("#modalBody .text-center").text(message);
+            $("#notificationModal").modal('show');
+        }
+
         $(".btn#editButton").click(function() {
             var index = $(this).data("index");
             var productId = $(this).data("id");
@@ -407,7 +433,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                 });
 
                 // Change image to file input
-                imageDiv.replaceWith('<div class="m-2" style="height: 250px; width: 250px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px dashed #ccc;"><input type="file" class="form-control-file" style="display: none;" id="file-input-' + index + '"><button class="btn btn-secondary" style="color: white; font-family: PoppinsMedium; font-size: 20px; background-color: #374375" onclick="$(\'#file-input-' + index + '\').click();">Choose File</button></div>');
+                imageDiv.replaceWith('<div class="m-2" style="height: 250px; width: 250px; display: flex; justify-content: center; align-items: center; background-color: #f0f0f0; border: 1px dashed #ccc;"><input type="file" class="form-control-file" style="display: none;" id="file-input-' + index + '" accept=".jpg,.jpeg,.svg,.png,.webp"><button class="btn btn-secondary" style="color: white; font-family: PoppinsMedium; font-size: 20px; background-color: #374375" onclick="$(\'#file-input-' + index + '\').click();">Choose File</button></div>');
             } else {
                 $(this).html('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16"><path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/></svg> Edit');
                 var newName = nameDiv.find("input").val();
@@ -436,7 +462,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                     success: function(response) {
                         var jsonResponse = JSON.parse(response);
                         if (jsonResponse.success) {
-                            alert("Product updated successfully.");
+                            showNotificationModal('success', 'Product updated successfully.');
 
                             // Update the cart session via AJAX to reflect the changes
                             $.ajax({
@@ -465,7 +491,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                                     updateTotals(); // Update totals
                                 },
                                 error: function() {
-                                    alert("Failed to update cart.");
+                                    showNotificationModal('error', 'Failed to update cart.');
                                 }
                             });
 
@@ -482,12 +508,15 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                                 },
                                 error: function(response) {
                                     console.log(response);
-                                    alert("Failed to fetch updated image.");
+                                    showNotificationModal('error', 'Failed to fetch updated image.');
                                 }
                             });
                         } else {
-                            alert("Failed to update product.");
+                            showNotificationModal('error', jsonResponse.message);
                         }
+                    },
+                    error: function() {
+                        showNotificationModal('error', 'Failed to update product.');
                     }
                 });
             }
@@ -497,3 +526,4 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 
 <?php
 require_once('./footer.php');
+?>

@@ -1,5 +1,6 @@
 <?php
 require_once('./connection.php');
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $productName = $_POST['productName'];
@@ -18,6 +19,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute(['id' => $id, 'name' => $productName, 'price' => $price, 'photo' => $dbPath]);
     } catch (PDOException $e) {
         echo "Error: " . $e->getMessage();
+        $_SESSION['notification']['status'] = "error";
+        $_SESSION['notification']['message'] = "Failed to add product<br>" . $e->getMessage();
+        header("Location: addProductTransaction.php");
         exit;
     }
 
@@ -28,8 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Convert image to .webp
         $image = null;
-        $width = 0;
-        $height = 0;
         switch ($photoExtension) {
             case 'jpg':
             case 'jpeg':
@@ -55,15 +57,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $x = ($width - $size) / 2;
             $y = ($height - $size) / 2;
 
-            $croppedImage = imagecrop($image, ['x' => $x, 'y' => $y, 'width' => $size, 'height' => $size]);
-            if ($croppedImage) {
-                imagewebp($croppedImage, $targetFile);
-                imagedestroy($croppedImage);
-            }
+            $croppedImage = imagecreatetruecolor($size, $size);
+            imagecopyresampled($croppedImage, $image, 0, 0, $x, $y, $size, $size, $size, $size);
+            imagewebp($croppedImage, $targetFile);
+            imagedestroy($croppedImage);
             imagedestroy($image);
         }
     }
-
-    header("Location: transaction.php");
+    $_SESSION['notification']['status'] = "success";
+    $_SESSION['notification']['message'] = "Your new product has been successfully added!";
+    header("Location: addProductTransaction.php");
     exit();
 }
