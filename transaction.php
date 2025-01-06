@@ -266,9 +266,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
             var index = $(this).data("index");
             var currentValue = parseInt($("#input-" + index).text());
 
-            // Increment the count in the UI
             var newValue = currentValue + 1;
-            $("#input-" + index).text(newValue);
 
             // Update the cart session via AJAX
             $.ajax({
@@ -281,18 +279,24 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                 },
                 dataType: 'json', // Expect JSON response
                 success: function(response) {
-                    // Update the cart display with the new cart items
-                    var cartHtml = '';
-                    $.each(response, function(i, item) {
-                        cartHtml += '<tr style="background-color: ' + item.row_color + ';">' +
-                            '<td>' + item.Nama_Produk + '</td>' +
-                            '<td>' + item.Jumlah_Produk + '</td>' +
-                            '<td>' + item.Harga_Produk + '</td>' +
-                            '<td>' + item.Total_Harga + '</td>' +
-                            '</tr>';
-                    });
-                    $("#cart-items").html(cartHtml); // Update the table with new cart items
-                    updateTotals(); // Update totals
+                    if (response.status === 'success') {
+                        // Update the count in the UI after checking with database
+                        $("#input-" + index).text(newValue);
+                        // Update the cart display with the new cart items
+                        var cartHtml = '';
+                        $.each(response.cart, function(i, item) {
+                            cartHtml += '<tr style="background-color: ' + item.row_color + ';">' +
+                                '<td>' + item.Nama_Produk + '</td>' +
+                                '<td>' + item.Jumlah_Produk + '</td>' +
+                                '<td>' + item.Harga_Produk + '</td>' +
+                                '<td>' + item.Total_Harga + '</td>' +
+                                '</tr>';
+                        });
+                        $("#cart-items").html(cartHtml); // Update the table with new cart items
+                        updateTotals(); // Update totals
+                    } else {
+                        showNotificationModal('error', response.message);
+                    }
                 }
             });
         });
@@ -318,18 +322,22 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                     },
                     dataType: 'json', // Expect JSON response
                     success: function(response) {
-                        // Update the cart display with the new cart items
-                        var cartHtml = '';
-                        $.each(response, function(i, item) {
-                            cartHtml += '<tr style="background-color: ' + item.row_color + ';">' +
-                                '<td>' + item.Nama_Produk + '</td>' +
-                                '<td>' + item.Jumlah_Produk + '</td>' +
-                                '<td>' + item.Harga_Produk + '</td>' +
-                                '<td>' + item.Total_Harga + '</td>' +
-                                '</tr>';
-                        });
-                        $("#cart-items").html(cartHtml);
-                        updateTotals(); // Update totals
+                        if (response.status === 'success') {
+                            // Update the cart display with the new cart items
+                            var cartHtml = '';
+                            $.each(response.cart, function(i, item) {
+                                cartHtml += '<tr style="background-color: ' + item.row_color + ';">' +
+                                    '<td>' + item.Nama_Produk + '</td>' +
+                                    '<td>' + item.Jumlah_Produk + '</td>' +
+                                    '<td>' + item.Harga_Produk + '</td>' +
+                                    '<td>' + item.Total_Harga + '</td>' +
+                                    '</tr>';
+                            });
+                            $("#cart-items").html(cartHtml);
+                            updateTotals(); // Update totals
+                        } else {
+                            showNotificationModal('error', response.message);
+                        }
                     }
                 });
             }
@@ -403,7 +411,7 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
         function showNotificationModal(status, message) {
             $("#status").text(status === 'success' ? 'Success' : 'Error');
             $("#modalBody img").attr('src', status === 'success' ? './asset/checked.png' : './asset/no.png');
-            $("#modalBody .text-center").text(message);
+            $("#modalBody .text-center").html(message);
             $("#notificationModal").modal('show');
         }
 

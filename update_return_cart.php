@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['return_cart'] = $currentCart;
                 echo json_encode(['success' => true, 'cart' => $currentCart]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'Stock limit reached']);
+                echo json_encode(['success' => false, 'message' => 'Stock limit reached<br>Stock available in inventory: ' . $stockAvailable]);
             }
             break;
 

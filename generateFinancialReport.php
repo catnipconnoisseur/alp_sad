@@ -17,11 +17,11 @@ $month = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    $tahun = $_GET['tahun'];
     $bulan = $_GET['bulan'];
+    $tahun = $_GET['tahun'];
 
     try {
-        $q = $pdo->prepare("SELECT SUM(Jumlah_Biaya) FROM BIAYA_OPERASIONAL WHERE Jenis_Biaya = ? AND MONTH(Tanggal_Biaya) = ? AND YEAR(Tanggal_Biaya) = ?;");
+        $q = $pdo->prepare("SELECT IFNULL(SUM(Jumlah_Biaya), 0) AS totalexpense FROM BIAYA_OPERASIONAL WHERE Jenis_Biaya = ? AND MONTH(Tanggal_Biaya) = ? AND YEAR(Tanggal_Biaya) = ?");
         $q->execute(['Listrik Air', $bulan, $tahun]);
         $waterElectricity = $q->fetchColumn();
         $q->execute(['Transportasi', $bulan, $tahun]);
@@ -32,10 +32,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
         $unexpected = $q->fetchColumn();
         $q = $pdo->prepare("SELECT IFNULL(SUM(Total_Harga_Bayar), 0) AS totaltransaksi FROM TRANSAKSI WHERE MONTH(Tanggal_Transaksi) = ? AND YEAR(Tanggal_Transaksi) = ?;");
         $q->execute([
-            date('m'),
-            date('Y'),
+            $bulan,
+            $tahun,
         ]);
         $totalTransaksi = $q->fetch()['totaltransaksi'];
+        $q = $pdo->prepare("SELECT IFNULL(SUM(Total_Harga_Beli), 0) AS totalpembelian FROM PEMBELIAN WHERE MONTH(Tanggal_Pembelian) = ? AND YEAR(Tanggal_Pembelian) = ?;");
+        $q->execute([
+            $bulan,
+            $tahun,
+        ]);
+        $totalPembelian = $q->fetchColumn();
         $q = $pdo->prepare("CALL pGenCashFlow(?, ?);");
         $q->execute([$month[$bulan], $tahun]);
         $cashFlow = $q->fetch()['totalcashflow'];
@@ -52,6 +58,7 @@ $report = [
     'salary' => $salary ?? 0,
     'unexpected' => $unexpected ?? 0,
     'cashFlow' => $cashFlow ?? 0,
+    'pembelian' => $totalPembelian ?? 0,
 ]
 
 ?>
@@ -137,26 +144,30 @@ $report = [
         <div class="bg-white px-3 pb-5 d-flex flex-column justify-content-between" style="width: 564px; height: 789px; border: 1px solid black">
             <span class="text-center mt-3" style="font-family: InterExtraBold; font-size: 40px; color: #374375;">Financial Report<br>of Cash Flow</span>
             <span class="report-segment">Income</span>
-            <span class="report-item mx-3 row d-flex align-items-center">
+            <span class="report-item mx-1 row d-flex align-items-center">
                 <span class="col-7">Transaction</span>
-                <span class="col-5">Rp. <?= number_format($report['transaction'], 0, ',', '.') ?>,-</span>
+                <span class="col-5">Rp <?= number_format($report['transaction'], 0, ',', '.') ?>,-</span>
             </span>
             <span class="report-segment">Expense</span>
-            <span class="report-item mx-3 row d-flex align-items-center">
+            <span class="report-item mx-1 row d-flex align-items-center">
                 <span class="col-7">Water and Electricity</span>
-                <span class="col-5">Rp. <?= number_format($report['waterElectricity'], 0, ',', '.') ?>,-</span>
+                <span class="col-5">Rp <?= number_format($report['waterElectricity'], 0, ',', '.') ?>,-</span>
             </span>
-            <span class="report-item mx-3 row d-flex align-items-center">
+            <span class="report-item mx-1 row d-flex align-items-center">
                 <span class="col-7">Transportation</span>
-                <span class="col-5">Rp. <?= number_format($report['transportation'], 0, ',', '.') ?>,-</span>
+                <span class="col-5">Rp <?= number_format($report['transportation'], 0, ',', '.') ?>,-</span>
             </span>
-            <span class="report-item mx-3 row d-flex align-items-center">
+            <span class="report-item mx-1 row d-flex align-items-center">
                 <span class="col-7">Salary Expenses</span>
-                <span class="col-5">Rp. <?= number_format($report['salary'], 0, ',', '.') ?>,-</span>
+                <span class="col-5">Rp <?= number_format($report['salary'], 0, ',', '.') ?>,-</span>
             </span>
-            <span class="report-item mx-3 row d-flex align-items-center">
+            <span class="report-item mx-1 row d-flex align-items-center">
                 <span class="col-7">Unexpected Costs</span>
-                <span class="col-5">Rp. <?= number_format($report['unexpected'], 0, ',', '.') ?>,-</span>
+                <span class="col-5">Rp <?= number_format($report['unexpected'], 0, ',', '.') ?>,-</span>
+            </span>
+            <span class="report-item mx-1 row d-flex align-items-center">
+                <span class="col-7">Pembelian</span>
+                <span class="col-5">Rp <?= number_format($report['pembelian'], 0, ',', '.') ?>,-</span>
             </span>
             <span class="report-segment row d-flex align-items-center">
                 <span class="col-5">Cash Flow</span>

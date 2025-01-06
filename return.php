@@ -179,7 +179,7 @@ $returnCart = $_SESSION['return_cart'] ?? [];
         function showNotificationModal(title, message) {
             $("#modalBody img").attr('src', title === 'Success' ? './asset/checked.png' : './asset/no.png');
             $('#modalBody #status').text(title);
-            $('#modalBody .text-center').text(message);
+            $('#modalBody .text-center').html(message);
             $('#notificationModal').modal('show');
         }
 

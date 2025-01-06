@@ -20,14 +20,23 @@ if ($action == 'add') {
     $found = false;
     foreach ($_SESSION['cart'] as &$cartItem) {
         if ($cartItem['ID_Produk'] == $product['ID_Produk']) {
-            $cartItem['Jumlah_Produk'] = $quantity;
-            $cartItem['Total_Harga'] = $cartItem['Jumlah_Produk'] * $product['Harga_Jual'];
+            if ($product['Stock_Tersedia'] >= $quantity) {
+                $cartItem['Jumlah_Produk'] = $quantity;
+                $cartItem['Total_Harga'] = $cartItem['Jumlah_Produk'] * $product['Harga_Jual'];
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Stock limit reached<br>Stock available to purchase: ' . $product['Stock_Tersedia']]);
+                exit;
+            }
             $found = true;
             break;
         }
     }
 
     if (!$found) {
+        if ($product['Stock_Tersedia'] < $quantity) {
+            echo json_encode(['status' => 'error', 'message' => 'Stock limit reached<br>Stock available to purchase: ' . $product['Stock_Tersedia']]);
+            exit;
+        }
         $_SESSION['cart'][] = [
             'ID_Produk' => $product['ID_Produk'],
             'Nama_Produk' => $product['Nama_Produk'],
@@ -78,4 +87,4 @@ foreach ($_SESSION['cart'] as $c) {
     $even = !$even;
 }
 
-echo json_encode($cartItems);
+echo json_encode(['status' => 'success', 'cart' => $cartItems]);
