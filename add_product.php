@@ -5,10 +5,17 @@ session_start();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $productName = $_POST['productName'];
     $price = (int) str_replace(".", "", $_POST['price']);
-    $photo = $_FILES['image']['name'];
-    $photoExtension = pathinfo($photo, PATHINFO_EXTENSION);
-    $photoName = str_replace(' ', '_', strtolower($productName)) . '_' . date('Ymd') . '.webp';
-    $dbPath = "FotoProduk/" . pathinfo($photoName, PATHINFO_FILENAME);
+    if (isset($_POST['image']) && $_FILES['image']['error'] == 0) {
+        $photo = $_FILES['image']['name'];
+        $photoExtension = pathinfo($photo, PATHINFO_EXTENSION);
+        $photoName = str_replace(' ', '_', strtolower($productName)) . '_' . date('Ymd') . '.webp';
+        $dbPath = "FotoProduk/" . pathinfo($photoName, PATHINFO_FILENAME);
+    } else {
+        $photo = null;
+        $photoExtension = null;
+        $photoName = null;
+        $dbPath = null;
+    }
     $q = $pdo->prepare("SELECT fGenProductId(?);");
     $q->execute([$productName]);
     $id = $q->fetchColumn();
@@ -24,10 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors[] = "Valid price is required.";
     }
 
-    if (empty($photo)) {
-        $errors[] = "Product image is required.";
-    }
-
     // If validation fails, return error message
     if (!empty($errors)) {
         $_SESSION['notification']['status'] = "error";
@@ -39,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Insert product into database
     try {
         $stmt = $pdo->prepare("INSERT INTO PRODUK(ID_Produk, Nama_Produk, Total_Harga_Beli, Images, status_del) VALUES (:id, :name, :price, :photo, '1')");
-        $stmt->execute(['id' => $id, 'name' => $productName, 'price' => $price, 'photo' => $dbPath]);
+        $stmt->execute(['id' => $id, 'name' => $productName, 'price' => $price, 'photo' => $dbPath ?? null]);
     } catch (PDOException $e) {
         echo "Error: " . $e->getMessage();
         $_SESSION['notification']['status'] = "error";
@@ -49,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     // Handle file upload and conversion to .webp
-    if ($photo) {
+    if ($photo != null) {
         $targetDir = "asset/FotoProduk/";
         $targetFile = $targetDir . $photoName;
 
@@ -73,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 break;
         }
 
-        if ($image) {
+        if ($image != null) {
             $width = imagesx($image);
             $height = imagesy($image);
             $size = min($width, $height);

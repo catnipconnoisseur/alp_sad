@@ -131,7 +131,7 @@ $purchaseCart = isset($_SESSION['purchase_cart']) ? $_SESSION['purchase_cart'] :
             </div>
             <div class="modal-body d-flex justify-content-center align-items-center flex-column" id="modalBody" style="color: #374375; margin: 0; padding: 0; font-family: PoppinsSemiBold; font-size: 40px;">
                 <img src="<?= isset($status) && $status == 'success' ? './asset/checked.png' : './asset/no.png' ?>" alt="icon" style="height: 203px;">
-                <div style="font-family: PoppinsSemiBold; font-size: 48px"><?= isset($status) && $status == 'success' ? 'Success' : 'Error' ?></div>
+                <div id="status" style="font-family: PoppinsSemiBold; font-size: 48px"><?= isset($status) && $status == 'success' ? 'Success' : 'Error' ?></div>
                 <div class="text-center" style="font-size: 24px"><?= isset($message) ? $message : ''; ?></div>
             </div>
             <div class="modal-footer d-flex justify-content-center align-items-center" style="border: none; padding: 0; margin: 0;">
@@ -154,12 +154,23 @@ $purchaseCart = isset($_SESSION['purchase_cart']) ? $_SESSION['purchase_cart'] :
                     action: action
                 },
                 success: function(response) {
-                    var data = JSON.parse(response);
-                    if (!data.success) {
-                        console.log('Failed to update cart.');
+                    try {
+                        var data = JSON.parse(response.trim());
+                        if (!data.success) {
+                            showNotificationModal('Error', 'Failed to update cart.');
+                        }
+                    } catch (e) {
+                        console.error('Error parsing JSON response:', e);
                     }
                 }
             });
+        }
+
+        function showNotificationModal(title, message) {
+            $("#modalBody img").attr('src', title === 'Success' ? './asset/checked.png' : './asset/no.png');
+            $('#modalBody #status').text(title);
+            $('#modalBody .text-center').html(message);
+            $('#notificationModal').modal('show');
         }
 
         // Increase button functionality
@@ -187,24 +198,22 @@ $purchaseCart = isset($_SESSION['purchase_cart']) ? $_SESSION['purchase_cart'] :
             $.ajax({
                 url: 'finalize_purchase.php',
                 type: 'POST',
+                dataType: 'json',
                 success: function(response) {
-                    var data = JSON.parse(response);
-                    if (data.success) {
-                        // Show success modal
-                        $('#modalBody img').attr('src', './asset/checked.png');
-                        $('#modalBody div:nth-child(2)').text('Success');
-                        $('#modalBody div:nth-child(3)').text('Your purchase data has been successfully recorded');
-                        var myModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-                        myModal.show();
-                        // Reset the cart and update the view
-                        $(".count-value").text('0');
-                    } else {
-                        // Show error modal
-                        $('#modalBody img').attr('src', './asset/no.png');
-                        $('#modalBody div:nth-child(2)').text('Error');
-                        $('#modalBody div:nth-child(3)').text('Failed to complete the purchase.');
-                        var myModal = new bootstrap.Modal(document.getElementById('notificationModal'));
-                        myModal.show();
+                    try {
+                        console.log(response);
+                        if (response.status === 'success') {
+                            console.log('Purchase completed successfully.');
+
+                            showNotificationModal('Success', 'Purchase completed successfully.');
+                            // Reset the cart and update the view
+                            $(".count-value").text('0');
+                        } else {
+                            // Show error modal
+                            showNotificationModal('Error', response.message);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing JSON response:', e);
                     }
                 }
             });

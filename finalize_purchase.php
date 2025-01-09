@@ -10,13 +10,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $purchaseId = $q->fetchColumn();
 
         try {
-            $pdo->prepare("INSERT INTO PEMBELIAN(ID_Pembelian, Jumlah_Dibeli, Total_Harga_Beli, status_del) VALUES (?, ?, ?, '1');")->execute([
-                $purchaseId,
-                0,
-                0
-            ]);
+            $q = $pdo->prepare("SELECT ID_Pembelian FROM PEMBELIAN WHERE ID_Pembelian = ?;");
+            $q->execute([$purchaseId]);
+            if ($q->rowCount() <= 0) {
+                $pdo->prepare("INSERT INTO PEMBELIAN(ID_Pembelian, Jumlah_Dibeli, Total_Harga_Beli, status_del) VALUES (?, ?, ?, '1');")->execute([
+                    $purchaseId,
+                    0,
+                    0
+                ]);
+            }
         } catch (PDOException $e) {
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            exit;
         }
 
         try {
@@ -48,12 +53,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $pdo->commit();
             $_SESSION['purchase_cart'] = [];
-            echo json_encode(['success' => true]);
+            echo json_encode(['status' => 'success', 'message' => 'Purchase success.']);
+            exit;
         } catch (Exception $e) {
             $pdo->rollBack();
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            exit;
         }
     } else {
-        echo json_encode(['success' => false, 'message' => 'Cart is empty.']);
+        echo json_encode(['status' => 'error', 'message' => 'Cart is empty.']);
+        exit;
     }
 }
