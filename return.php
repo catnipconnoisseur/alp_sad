@@ -223,7 +223,8 @@ $returnCart = $_SESSION['return_cart'] ?? [];
                     if (data.success) {
                         showNotificationModal('Success', 'Your return data has been successfully recorded!');
                         // Reload the products section
-                        $(".col-9 .row").load(location.href + " .col-9 .row > *");
+                        $(".count-value").text(0);
+                        $(".reason-input").val('');
                     } else {
                         showNotificationModal('Error', data.message);
                     }
