@@ -138,12 +138,24 @@ $month = [
     </div>
     <div class="col-9">
         <form id="add" action="./addBiayaOperasional.php" method="POST">
-            <h1 class="text-left mx-5 mt-5" style="font-family: PoppinsMedium; font-size:24px; color: #000000; width: 100%">Expense Category</h1>
-            <select class="form-select text-white mx-5 mt-3" id="dropdown" name="expense_category" style="background-color: #374375; border-radius: 50px; width: 200px; height: 46px" data-bs-theme="dark">
-                <?php foreach ($expense_categories as $key => $value): ?>
-                    <option value="<?= $value ?>"><?= $key ?></option>
-                <?php endforeach; ?>
-            </select>
+            <div class="d-flex justify-content-between align-items-end">
+                <div>
+                    <h1 class="text-left mx-5 mt-5" style="font-family: PoppinsMedium; font-size:24px; color: #000000; width: 100%">Expense Category</h1>
+                    <select class="form-select text-white mx-5 mt-3" id="dropdown" name="expense_category" style="background-color: #374375; border-radius: 50px; width: 200px; height: 46px" data-bs-theme="dark">
+                        <?php foreach ($expense_categories as $key => $value): ?>
+                            <option value="<?= $value ?>"><?= $key ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="d-flex align-items-center mx-5">
+                    <input type="number" name="tahun" id="tahun" class="form-control mx-5" style="background-color: #BABDE2; color: white; border: 1px solid #374375; width: 100px" placeholder="Tahun" min="1980" max="3000" value="<?= date('Y') ?>">
+                    <select class="form-select text-white" name="bulan" id="bulan" style="background-color: #374375; border-radius: 50px; width: 200px; height: 46px" data-bs-theme="dark">
+                        <?php foreach ($month as $num => $name): ?>
+                            <option value="<?= $num ?>" <?= $num == date('n') ? 'selected' : '' ?>><?= $name ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
             <h1 class="text-left mx-5 mt-5" style="font-family: PoppinsMedium; font-size:24px; color: #000000; width: 100%">Nominal</h1>
             <div class="d-flex align-items-end flex-column mx-5 mt-3">
                 <input type="text" id="nominal" name="nominal" class="form-control" style="background-color: #BABDE2; color: white; border: 1px solid #374375" oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.')">

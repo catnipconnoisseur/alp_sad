@@ -141,6 +141,8 @@ $returnCart = $_SESSION['return_cart'] ?? [];
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
+        console.log('jQuery loaded:', !!window.jQuery); // Check if jQuery is loaded
+
         var reasonTimeout;
         var productIds = <?= json_encode(array_column($products, 'ID_Produk')) ?>;
 
