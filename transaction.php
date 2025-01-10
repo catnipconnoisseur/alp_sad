@@ -241,6 +241,8 @@ $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
+        console.log("test");
+
         // Function to format numbers with thousand separators
         function formatNumber(num) {
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");

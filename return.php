@@ -139,6 +139,13 @@ $returnCart = $_SESSION['return_cart'] ?? [];
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        console.log('Apakah jquery berhasil ke-load?:', !!window.jQuery); // Check if jQuery is loaded
+    });
+</script>
+
 <script>
     $(document).ready(function() {
         console.log('jQuery loaded:', !!window.jQuery); // Check if jQuery is loaded
